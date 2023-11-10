@@ -1,7 +1,5 @@
 import './App.css'
 
-function App() {
-  const valor = 12
-}
+function App() {}
 
 export default App
