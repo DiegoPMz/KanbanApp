@@ -1,0 +1,53 @@
+.iconDarkTheme-svg {
+  width: 1rem;
+  height: 1rem;
+}
+.iconLigthTheme-svg {
+  width: 1.1875rem;
+  height: 1.1875rem;
+}
+
+.boardTheme-container {
+  width: 14.6875rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+
+  margin-inline: auto;
+  padding: 0.8rem 0;
+
+  background-color: var(--secundary-color);
+  border-radius: 8px;
+}
+.BoardTheme_switchBtn {
+  width: 2.625rem;
+  height: 1.3125rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 3px;
+
+  border-radius: 1.25rem;
+  background-color: var(--btn-prim);
+}
+
+.BoardTheme_switchBtn-circle {
+  width: 0.9375rem;
+  aspect-ratio: 1/1;
+  display: block;
+
+  border-radius: 50%;
+  background-color: hsl(0, 0%, 100%);
+}
+
+/* POSITION THEME */
+
+.BoardTheme_switchBtn--dark {
+  justify-content: flex-end;
+}
+.BoardTheme_switchBtn--ligth {
+  justify-content: flex-start;
+}

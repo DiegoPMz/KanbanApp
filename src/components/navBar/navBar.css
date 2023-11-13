@@ -1,0 +1,140 @@
+.logoMobile-svg {
+  color: var(--btn-prim);
+  width: 1.5rem;
+  height: 1.5625rem;
+}
+.iconChevron-svg {
+  color: var(--btn-prim);
+  width: 0.625rem;
+  height: 7px;
+}
+.IconAddTaskMobile-svg {
+  color: #fff;
+  aspect-ratio: 1/1;
+  width: 0.75rem;
+}
+.iconVerticalEllipsis-svg {
+  color: var(--subtitle-color);
+}
+
+/* NAVBAR */
+
+.navBar {
+  height: 4.5rem;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1rem;
+  background-color: var(--primary-color);
+
+  /* ❌ */
+  position: relative;
+  z-index: 200;
+}
+.navBar__boardList-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.boardList-container__btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  cursor: pointer;
+}
+.boardList-container__txt {
+  color: var(--txt-color);
+  font-size: 1.125em;
+  font-weight: 700;
+}
+
+.navBar__settings-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.settings-container__add {
+  width: 3rem;
+  height: 2rem;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-color: var(--btn-prim);
+  border-radius: 1.5rem;
+  opacity: 0.25;
+}
+
+/* LOGO RES-DEKSTOP */
+.boardList-container__logoDekstop {
+  height: 100%;
+  padding-right: 1.5rem;
+
+  display: flex;
+  align-items: center;
+
+  position: relative;
+  z-index: 40;
+}
+.boardList-container__logoDekstop::before {
+  content: '';
+  width: 1px;
+  height: 100%;
+
+  background-color: var(--border-color);
+
+  position: absolute;
+  right: -1px;
+  z-index: 20;
+}
+
+/* MEDIA */
+@media screen and (min-width: 768px) {
+  .navBar {
+    height: 5rem;
+    padding: 0 1.5rem;
+
+    border-bottom: 1px solid var(--border-color);
+  }
+  .navBar__boardList-container {
+    gap: 1.5rem;
+  }
+  .boardList-container__txt {
+    font-size: 1.25rem;
+  }
+  .navBar__settings-container {
+    gap: 1.5rem;
+  }
+  .settings-container__add {
+    width: fit-content;
+    height: fit-content;
+    padding: 0.625rem 1rem;
+  }
+  .settings-container__add-icon {
+    display: none;
+  }
+  .settings-container__add::after {
+    content: '+ Add New Task';
+    color: hsl(0, 0%, 100%);
+    font-size: 0.9375em;
+    font-weight: 700;
+  }
+}
+@media screen and (min-width: 1200px) {
+  .navBar {
+    height: 6rem;
+  }
+  .navBar__boardList-container {
+    gap: 2rem;
+  }
+  .boardList-container__txt {
+    font-size: 1.5rem;
+  }
+  .navBar__settings-container {
+    gap: 1.5rem;
+  }
+  .boardList-container__logoDekstop {
+    padding-right: 2rem;
+  }
+}

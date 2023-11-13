@@ -1,0 +1,15 @@
+.kanbanApp-main {
+  height: 100vh;
+  height: 100dvh;
+  background-color: var(--secundary-color);
+}
+
+.kanbanApp-main__subContainer {
+  width: 100%;
+}
+
+@media screen and (min-width: 768px) {
+  .kanbanApp-main {
+    display: flex;
+  }
+}

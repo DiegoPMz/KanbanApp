@@ -1,0 +1,33 @@
+.iconHideSideBar-svg {
+  width: 1.125rem;
+  height: 1rem;
+
+  /* color: hsl(216, 15%, 57%); */
+}
+
+.kanbanMenu__btnHideMenu {
+  height: 48px;
+  width: 80%;
+
+  display: flex;
+  align-items: center;
+  gap: 0.9375rem;
+
+  border-top-right-radius: 6.25rem;
+  border-bottom-right-radius: 6.25rem;
+  margin-top: 8px;
+  padding-left: 18px;
+
+  color: var(--subtitle-color);
+  transition: background-color 0.2s ease-out;
+}
+
+.kanbanMenu__btnHideMenu:hover {
+  background-color: var(--btn-sec);
+  color: var(--btn-prim);
+}
+
+.kanbanMenu__btnHideMenu-txt {
+  font-size: 0.9375em;
+  font-weight: 700;
+}

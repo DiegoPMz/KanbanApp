@@ -59,7 +59,7 @@
 }
 
 /* Las adaptamos al modo claro */
-@media (prefers-color-scheme: ligth) {
+@media (prefers-color-scheme: light) {
   :root {
     --txt-color: hsl(237, 100%, 4%);
     --primary-color: hsl(0, 0%, 100%);

@@ -1,0 +1,28 @@
+.iconShowSideBar-svg {
+  width: 1rem;
+  height: 0.6875rem;
+
+  color: hsl(0, 0%, 100%);
+}
+
+.kanbanApp-main__btnShowMenu {
+  width: 3.125rem;
+  height: 3rem;
+
+  position: absolute;
+  bottom: 2.875rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-top-right-radius: 6.25rem;
+  border-bottom-right-radius: 6.25rem;
+  background-color: var(--btn-prim);
+
+  transition: background-color 0.2s ease-out;
+}
+
+.kanbanApp-main__btnShowMenu:hover {
+  background-color: var(--btn-prim-h);
+}
