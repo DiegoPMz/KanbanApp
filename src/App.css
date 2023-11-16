@@ -7,12 +7,14 @@
   --btn-sec-h: hsl(0, 0%, 100%);
 
   --border-color: hsl(236, 11%, 27%);
+  --txt-color-input: hsl(0, 0%, 100%);
 }
 
 #ligth-theme {
   --txt-color: hsl(237, 100%, 4%);
   --primary-color: hsl(0, 0%, 100%);
   --secundary-color: hsl(220, 69%, 97%);
+  --txt-color-input: hsl(216, 15%, 57%);
 
   --btn-sec: hsla(242, 48%, 58%, 0.1);
   --btn-sec-h: hsla(242, 48%, 58%, 0.25);
@@ -20,6 +22,15 @@
   --border-color: hsl(221, 69%, 94%);
 }
 
+.main--opacity {
+  opacity: 0.5;
+  background-color: #000;
+}
+
 button {
+  cursor: pointer;
+}
+
+label {
   cursor: pointer;
 }

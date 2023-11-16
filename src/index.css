@@ -25,6 +25,8 @@
 
   /* DARK MODE  ---> DEFAULT */
   --txt-color: hsl(0, 0%, 100%);
+  --txt-color-input: hsl(0, 0%, 100%);
+
   --primary-color: hsl(235, 12%, 19%);
   --secundary-color: hsl(235, 16%, 15%);
 
@@ -35,6 +37,7 @@
 
   /* LIGTH MODE */
   /* --txt-color: hsl(237, 100%, 4%);
+  --txt-color-input: hsl(216, 15%, 57%);
   --primary-color: hsl(0, 0%, 100%);
   --secundary-color: hsl(220, 69%, 97%);
 

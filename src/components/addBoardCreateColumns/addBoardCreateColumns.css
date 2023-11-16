@@ -1,0 +1,44 @@
+/* .addBoardForm__boardform-containerColumns {
+} */
+.boardform-containerColumns__label {
+  font-size: 0.75em;
+  font-weight: 700;
+  color: var(--txt-color-input);
+  /* margin-bottom: 8px; */
+}
+.boardform-containerColumns__containerNameList {
+  max-height: 7rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  padding-top: 8px;
+  padding-bottom: 0.75rem;
+  padding-left: 1px;
+
+  overflow-y: scroll;
+}
+
+.boardform-containerColumns__btn {
+  width: 100%;
+
+  color: hsl(0, 0%, 100%);
+  background-color: var(--btn-prim);
+
+  text-align: center;
+
+  font-size: 0.8125em;
+  font-weight: 700;
+  line-height: 1.4375rem;
+  border-radius: 1.25rem;
+  padding: 8px 0;
+}
+.boardform-containerColumns__btn-otherColor {
+  background-color: var(--btn-sec);
+  color: var(--btn-prim);
+  margin-bottom: 1.5rem;
+}
+.boardform-containerColumns__btn-otherColor:hover {
+  background-color: var(--btn-sec-h);
+}

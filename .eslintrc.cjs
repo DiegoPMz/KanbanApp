@@ -20,6 +20,7 @@ module.exports = {
       'warn',
       { allowConstantExport: true },
     ],
+
     'prettier/prettier': 0,
     'react/prop-types': 0,
   },

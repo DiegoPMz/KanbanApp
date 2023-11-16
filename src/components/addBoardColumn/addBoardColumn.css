@@ -1,0 +1,33 @@
+.iconCross-svg {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  color: var(--subtitle-color);
+}
+
+.boardform-containerColumns__containerName {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.containerColumns__containerName-nameColumn {
+  width: 100%;
+
+  font-size: 0.8125em;
+  font-weight: 500;
+  line-height: 1.4375rem;
+  color: var(--txt-color);
+
+  padding: 8px 0;
+  padding-left: 1rem;
+
+  border-radius: 4px;
+  border: 1px solid rgba(130, 143, 163, 0.25);
+}
+.containerColumns__containerName-nameColumn::placeholder {
+  color: var(--subtitle-color);
+}
+.containerColumns__containerName-nameColumn:focus-visible {
+  outline: 1px solid var(--input-check-h);
+}

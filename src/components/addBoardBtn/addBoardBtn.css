@@ -1,0 +1,12 @@
+.board-list__item-link--add {
+  width: fit-content;
+
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  margin: 14px 0;
+  margin-left: 1.5rem;
+
+  color: var(--btn-prim);
+}
