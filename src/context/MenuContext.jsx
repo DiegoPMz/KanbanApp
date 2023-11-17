@@ -11,6 +11,7 @@ export const MenuContextProvider = ({ children }) => {
   const handleShowMenu = () => {
     dispatch({ type: 'showMenu' })
   }
+
   const handleChangeTheme = () => {
     dispatch({ type: 'changeTheme' })
   }
@@ -37,11 +38,19 @@ export const MenuContextProvider = ({ children }) => {
   const handleCreateColumn = () => {
     dispatch({ type: 'createNewColumn' })
   }
+
   const handleDeleteColumn = (e, id) => {
     dispatch({ type: 'deleteColumn', payload: { id } })
   }
+
   const handleAddBoard = () => {
     dispatch({ type: 'addNewBoard' })
+  }
+
+  const selectCurrentBoard = (board) => {
+    currenResolution === phone
+      ? dispatch({ type: 'currentBoard-phone', payload: { ...board } })
+      : dispatch({ type: 'currentBoard-dekstop', payload: { ...board } })
   }
 
   const data = {
@@ -54,30 +63,10 @@ export const MenuContextProvider = ({ children }) => {
     handleDeleteColumn,
     handleAddBoard,
     outsideClickToClose,
+    selectCurrentBoard,
   }
 
   return <MenuContext.Provider value={data}>{children} </MenuContext.Provider>
 }
 
 export default MenuContext
-
-// useEffect(() => {
-//   const mainElement = document.querySelector('.kanbanApp-main')
-//   const CLASS_OPACITY_BG = 'main--opacity'
-
-//   const handleClickOutside = (e) => {
-//     if (!e.target.closest('.addBoardForm')) {
-//       handleCreateBoard()
-//     }
-//   }
-
-//   if (state.createBoardActive) {
-//     document.addEventListener('click', handleClickOutside)
-//   }
-
-//   state.createBoardActive
-//     ? mainElement.classList.add(CLASS_OPACITY_BG)
-//     : mainElement.classList.remove(CLASS_OPACITY_BG)
-
-//   return () => document.removeEventListener('click', handleClickOutside)
-// }, [state.createBoardActive])

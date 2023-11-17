@@ -9,13 +9,17 @@ export const NavbarLogoDekstop = () => {
   return (
     <>
       {state.menuActive ? (
-        <span className='boardList-container__txt'>Platform Launch</span>
+        <span className='boardList-container__txt'>
+          {state.currentBoard ? `${state.currentBoard.boardName}` : '🖍'}
+        </span>
       ) : (
         <>
           <div className='boardList-container__logoDekstop'>
             {state.menuTheme === 'dark' ? <LogoDark /> : <LogoLigth />}
           </div>
-          <span className='boardList-container__txt'>Platform Launch</span>
+          <span className='boardList-container__txt'>
+            {state.currentBoard ? `${state.currentBoard.boardName}` : '🖍'}
+          </span>
         </>
       )}
     </>

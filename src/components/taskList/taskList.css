@@ -1,0 +1,36 @@
+.taskList {
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  /* test */
+  height: 100%;
+  overflow: auto;
+}
+.taskList__title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.taskList__title-circle {
+  width: 0.9375rem;
+  height: 0.9375rem;
+
+  border-radius: 50%;
+
+  /* 👇 feature */
+  background-color: lightyellow;
+}
+.taskList__title-name {
+  color: var(--subtitle-color);
+
+  font-size: 0.75em;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+}
+.taskList__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}

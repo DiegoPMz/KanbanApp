@@ -5,6 +5,7 @@ export const menuState = {
   menuActive: false,
   menuTheme: currentTheme(),
   createBoardActive: false,
+  currentBoard: null,
   allBoards: [],
   newBoard: {
     boardName: '',
@@ -137,8 +138,30 @@ export const menuReducer = (state, action) => {
         },
       }
     }
+    case 'currentBoard-phone': {
+      return {
+        ...state,
+        menuActive: false,
+        currentBoard: { ...action.payload },
+      }
+    }
+    case 'currentBoard-dekstop': {
+      return { ...state, currentBoard: { ...action.payload } }
+    }
 
     default:
       break
   }
 }
+
+// const allBoardsLocalStorage = localStorage.getItem('all_boards_storage')
+// ? [
+//     ...JSON.parse(localStorage.getItem('all_boards_storage')),
+//     { ...state.newBoard, boardId: generateUUID() },
+//   ]
+// : [...state.allBoards, { ...state.newBoard, boardId: generateUUID() }]
+
+// localStorage.setItem(
+// 'all_boards_storage',
+// JSON.stringify(allBoardsLocalStorage),
+// )

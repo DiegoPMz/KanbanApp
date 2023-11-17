@@ -1,0 +1,22 @@
+/* .singleTask__item {
+} */
+.singleTask__item-link {
+  width: 280px;
+
+  background-color: var(--primary-color);
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px 0px var(--singleTask-boxShadow);
+  padding: 23px 0;
+  padding-left: 16px;
+}
+.singleTask__item-title {
+  width: 80%;
+  color: var(--txt-color);
+  font-size: 15px;
+  font-weight: 700;
+}
+.singleTask__item-substasks {
+  color: var(--subtitle-color);
+  font-size: 12px;
+  font-weight: 700;
+}

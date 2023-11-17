@@ -1,0 +1,18 @@
+.taskListContainer {
+  width: fit-content;
+  height: fit-content;
+
+  padding: 1.5rem 1rem;
+
+  display: flex;
+  gap: 1.5rem;
+
+  /* test */
+  height: 100%;
+}
+
+@media screen and (min-width: 768px) {
+  .taskListContainer {
+    padding: 1.5rem;
+  }
+}

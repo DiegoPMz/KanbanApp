@@ -1,0 +1,39 @@
+.kanbanBody__emptyTask {
+  height: 45vh;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.kanbanBody__emptyTask-message {
+  width: 21.4375rem;
+  color: var(--subtitle-color);
+  text-align: center;
+  font-size: 1.125em;
+  font-weight: 700;
+}
+.kanbanBody__emptyTask-btnContent {
+  width: fit-content;
+
+  color: hsl(0, 0%, 100%);
+  background-color: var(--btn-prim);
+  border-radius: 1.5rem;
+  padding: 0.625rem 1rem;
+
+  font-size: 0.9375em;
+  font-weight: 700;
+
+  transition: background-color 0.2s ease-out;
+}
+.kanbanBody__emptyTask-btnContent:hover {
+  background-color: var(--btn-prim-h);
+}
+
+@media screen and (min-width: 768px) {
+  .kanbanBody__emptyTask-message {
+    width: 60%;
+  }
+}

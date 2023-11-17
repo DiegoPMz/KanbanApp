@@ -8,6 +8,7 @@
 
   --border-color: hsl(236, 11%, 27%);
   --txt-color-input: hsl(0, 0%, 100%);
+  --singleTask-boxShadow: hsla(220, 40%, 35%, 0.102);
 }
 
 #ligth-theme {
@@ -20,6 +21,7 @@
   --btn-sec-h: hsla(242, 48%, 58%, 0.25);
 
   --border-color: hsl(221, 69%, 94%);
+  --singleTask-boxShadow: rgba(54, 78, 126, 0.1);
 }
 
 .main--opacity {
@@ -33,4 +35,9 @@ button {
 
 label {
   cursor: pointer;
+}
+
+body {
+  max-height: 100vh;
+  max-height: 100dvh;
 }

@@ -4,7 +4,7 @@ import { LogoMobile } from '../../assets/LogoMobile'
 import MenuContext from '../../context/menuContext'
 
 export const NavbarLogoMobile = () => {
-  const { handleShowMenu } = useContext(MenuContext)
+  const { state, handleShowMenu } = useContext(MenuContext)
 
   return (
     <>
@@ -12,7 +12,9 @@ export const NavbarLogoMobile = () => {
       <button
         onClick={handleShowMenu}
         className='boardList-container__btn'>
-        <span className='boardList-container__txt'>Platform Launch</span>
+        <span className='boardList-container__txt'>
+          {state.currentBoard ? `${state.currentBoard.boardName}` : '🖍'}
+        </span>
         <IconChevron />
       </button>
     </>

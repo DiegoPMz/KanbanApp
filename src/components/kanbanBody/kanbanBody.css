@@ -1,0 +1,28 @@
+.kanbanBody {
+  width: 100%;
+}
+
+/* test 👇👇👇 */
+
+.kanbanBody {
+  width: 100%;
+  max-height: calc(100% - 72px) !important;
+  height: 100%;
+  overflow: auto;
+}
+
+/* 80px height of "NAVBAR" */
+
+@media screen and (min-width: 768px) {
+  .kanbanBody {
+    width: 100%;
+    max-height: calc(100% - 80px) !important;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .kanbanBody {
+    width: 100%;
+    max-height: calc(100% - 96px) !important;
+  }
+}

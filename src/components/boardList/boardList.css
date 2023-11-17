@@ -46,6 +46,10 @@
   transition: background-color 0.2s ease-out;
   color: var(--subtitle-color);
 }
+.board-list__item-link--currentBoard {
+  background-color: var(--input-check-h);
+  color: hsl(0, 0%, 100%);
+}
 
 /* EFFECT ACTIVE */
 .board-list__item-link:hover {
