@@ -64,6 +64,24 @@
   background-color: var(--btn-prim);
   border-radius: 1.5rem;
   opacity: 0.25;
+  pointer-events: none;
+
+  transition: opacity 0.2s ease-out;
+}
+
+.settings-container__add--currentBoard {
+  pointer-events: all;
+  opacity: 1;
+}
+
+.settings-container__options {
+  pointer-events: none;
+  opacity: 0.5;
+  transition: opacity 0.2s ease-out;
+}
+.settings-container__options--currentBoard {
+  pointer-events: all;
+  opacity: 1;
 }
 
 /* LOGO RES-DEKSTOP */

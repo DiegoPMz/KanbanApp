@@ -1,9 +1,11 @@
 import './kanbanApp.css'
 
 import { useContext } from 'react'
-import MenuContext from '../../context/menuContext'
+
+import MenuContext from '../../context/MenuContext'
 import { useScreenSize } from '../../hooks/useScreenSize'
 import { AddBoardForm } from '../addBoardForm/AddBoardForm'
+import { AddNewTask } from '../addNewTask/AddNewTask'
 import { BtnShowMenu } from '../btnShowMenu/BtnShowMenu'
 import { KanbanBody } from '../kanbanBody/KanbanBody'
 import { KanbanMenu } from '../kanbanMenu/KanbanMenu'
@@ -16,11 +18,12 @@ export const KanbanApp = () => {
   return (
     <div className='kanbanApp'>
       {state.menuActive && <KanbanMenu />}
-      {state.createBoardActive && <AddBoardForm />}
       <main className='kanbanApp-main'>
         <NavBar />
         <KanbanBody />
       </main>
+      {state.createBoardActive && <AddBoardForm />}
+      {state.createNewTask && <AddNewTask />}
 
       {currenResolution !== phone && !state.menuActive && <BtnShowMenu />}
     </div>

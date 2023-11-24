@@ -1,16 +1,33 @@
 import { currentTheme } from '../helpers/currentTheme'
 import { generateUUID } from '../helpers/generateUUID'
+import { saveLocalStorage } from '../helpers/saveLocalStorage'
+
+const KEY_SAVE_ALLBOARDS = 'KEY_SAVE_ALLBOARDS'
 
 export const menuState = {
   menuActive: false,
   menuTheme: currentTheme(),
   createBoardActive: false,
+  createNewTask: false,
+  settingsModalActive: false,
   currentBoard: null,
-  allBoards: [],
+  allBoards: [
+    ...saveLocalStorage({
+      key: KEY_SAVE_ALLBOARDS,
+    }),
+  ],
   newBoard: {
     boardName: '',
     boardColumns: [{ name: '', id: generateUUID(), task: [] }],
     boardId: null,
+  },
+
+  newTask: {
+    title: '',
+    description: '',
+    subtasks: [{ content: '', id: generateUUID() }],
+    status: '',
+    id: generateUUID(),
   },
 }
 
@@ -114,13 +131,20 @@ export const menuReducer = (state, action) => {
 
       if (columnsLength === validateNameColumn.length) return { ...state }
 
+      const newStateLocalStorage = [
+        ...state.allBoards,
+        { ...state.newBoard, boardId: generateUUID() },
+      ]
+
+      const newAllBoardsState = saveLocalStorage({
+        key: KEY_SAVE_ALLBOARDS,
+        data: newStateLocalStorage,
+      })
+
       return {
         ...state,
         createBoardActive: false,
-        allBoards: [
-          ...state.allBoards,
-          { ...state.newBoard, boardId: generateUUID() },
-        ],
+        allBoards: [...newAllBoardsState],
         newBoard: {
           boardName: '',
           boardColumns: [{ name: '', id: generateUUID(), task: [] }],
@@ -142,26 +166,103 @@ export const menuReducer = (state, action) => {
       return {
         ...state,
         menuActive: false,
-        currentBoard: { ...action.payload },
+        currentBoard: [{ ...action.payload }],
       }
     }
     case 'currentBoard-dekstop': {
-      return { ...state, currentBoard: { ...action.payload } }
+      return { ...state, currentBoard: [{ ...action.payload }] }
+    }
+    case 'settingsModalActive': {
+      return { ...state, settingsModalActive: !state.settingsModalActive }
+    }
+
+    case 'createNewTaskShow': {
+      return { ...state, createNewTask: true }
+    }
+    case 'createNewTaskClose': {
+      return { ...state, createNewTask: false }
+    }
+    case 'captureValuesNewTask': {
+      const { e, id } = action.payload
+      const { name, value } = e.target
+
+      if (name.includes('subTask')) {
+        return {
+          ...state,
+          newTask: {
+            ...state.newTask,
+            subtasks: state.newTask.subtasks.map((sub) =>
+              sub.id === id ? { ...sub, content: value } : { ...sub },
+            ),
+          },
+        }
+      }
+
+      return { ...state, newTask: { ...state.newTask, [name]: value } }
+    }
+    case 'createSubTask': {
+      return {
+        ...state,
+        newTask: {
+          ...state.newTask,
+          subtasks: [
+            ...state.newTask.subtasks,
+            { content: '', id: generateUUID() },
+          ],
+        },
+      }
+    }
+    case 'submitCreateNewTask': {
+      const validationTask = Object.values(state.newTask).some(
+        (value) => value === '',
+      )
+      const validationSubTask = state.newTask.subtasks.find(
+        (el) => el.content === '' && el.id,
+      )
+
+      if (validationTask || validationSubTask) return { ...state }
+
+      const modifiedCurrentBoard = {
+        ...state.currentBoard[0],
+        boardColumns: [
+          ...state.currentBoard[0].boardColumns.map((column) =>
+            column.name === state.newTask.status
+              ? {
+                  ...column,
+                  task: [...column.task, { ...state.newTask }],
+                }
+              : { ...column },
+          ),
+        ],
+      }
+
+      const setBoardtoAllBoards = state.allBoards.map((board) =>
+        board.boardId === modifiedCurrentBoard.boardId
+          ? { ...modifiedCurrentBoard }
+          : { ...board },
+      )
+
+      const newAllBoardsState = saveLocalStorage({
+        key: KEY_SAVE_ALLBOARDS,
+        data: setBoardtoAllBoards,
+      })
+
+      return {
+        ...state,
+        newTask: {
+          title: '',
+          description: '',
+          subtasks: [{ content: '', id: generateUUID() }],
+          status: '',
+          id: generateUUID(),
+        },
+        currentBoard: [modifiedCurrentBoard],
+        allBoards: newAllBoardsState,
+        createNewTask: false,
+      }
     }
 
     default:
       break
   }
 }
-
-// const allBoardsLocalStorage = localStorage.getItem('all_boards_storage')
-// ? [
-//     ...JSON.parse(localStorage.getItem('all_boards_storage')),
-//     { ...state.newBoard, boardId: generateUUID() },
-//   ]
-// : [...state.allBoards, { ...state.newBoard, boardId: generateUUID() }]
-
-// localStorage.setItem(
-// 'all_boards_storage',
-// JSON.stringify(allBoardsLocalStorage),
-// )

@@ -4,26 +4,27 @@
 
   position: absolute;
   z-index: 1200;
+  top: 0;
+
   background-color: rgba(0, 0, 0, 0.55);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .addBoardForm {
   width: 21.4375rem;
   padding: 1.5rem 0;
 
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 20%;
-  margin-inline: auto;
-
   display: flex;
   flex-direction: column;
   align-items: center;
 
-  background-color: darkslategray;
   background-color: var(--primary-color);
   border-radius: 6px;
+
+  animation: 0.25s showModal ease-out both;
 }
 
 .addBoardForm__title {

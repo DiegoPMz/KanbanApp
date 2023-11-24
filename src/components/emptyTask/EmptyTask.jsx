@@ -4,10 +4,10 @@ export const EmptyTask = () => {
   return (
     <div className='kanbanBody__emptyTask'>
       <span className='kanbanBody__emptyTask-message'>
-        This board is empty. Create a new column to get started.
+        This Column is empty. Create a new task to get started.
       </span>
       <button className='kanbanBody__emptyTask-btnContent'>
-        + Add New Column
+        + Add New Task
       </button>
     </div>
   )

@@ -1,5 +1,5 @@
 .taskListContainer {
-  width: fit-content;
+  width: max-content;
   height: fit-content;
 
   padding: 1.5rem 1rem;

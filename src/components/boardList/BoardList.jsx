@@ -28,6 +28,7 @@ export const BoardList = () => {
             <Board
               key={board.boardId}
               data={board}
+              id={board.boardId}
             />
           ))}
 

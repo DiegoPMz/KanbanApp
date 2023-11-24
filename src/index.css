@@ -56,6 +56,7 @@
     --txt-color: hsl(0, 0%, 100%);
     --primary-color: hsl(235, 12%, 19%);
     --secundary-color: hsl(235, 16%, 15%);
+    --txt-color-input: hsl(0, 0%, 100%);
 
     --btn-sec: hsl(0, 0%, 100%);
     --btn-sec-h: hsl(0, 0%, 100%);
@@ -71,6 +72,7 @@
     --txt-color: hsl(237, 100%, 4%);
     --primary-color: hsl(0, 0%, 100%);
     --secundary-color: hsl(220, 69%, 97%);
+    --txt-color-input: hsl(216, 15%, 57%);
 
     --btn-sec: hsla(242, 48%, 58%, 0.1);
     --btn-sec-h: hsla(242, 48%, 58%, 0.25);

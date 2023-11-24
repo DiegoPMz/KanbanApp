@@ -53,6 +53,30 @@ export const MenuContextProvider = ({ children }) => {
       : dispatch({ type: 'currentBoard-dekstop', payload: { ...board } })
   }
 
+  const handleSettingsModal = () => {
+    dispatch({ type: 'settingsModalActive' })
+  }
+
+  const showModalNewTask = () => {
+    dispatch({ type: 'createNewTaskShow' })
+  }
+  const closeModalNewTask = (e) => {
+    if (!e.target.matches('.addNewTask-container')) return
+
+    dispatch({ type: 'createNewTaskClose' })
+  }
+
+  const handleChangeNewTask = ({ e, id }) => {
+    dispatch({ type: 'captureValuesNewTask', payload: { e, id } })
+  }
+  const handleCreateSubTask = () => {
+    dispatch({ type: 'createSubTask' })
+  }
+  const handleSubmitTask = (e) => {
+    e.preventDefault()
+    dispatch({ type: 'submitCreateNewTask' })
+  }
+
   const data = {
     state,
     handleShowMenu,
@@ -64,6 +88,12 @@ export const MenuContextProvider = ({ children }) => {
     handleAddBoard,
     outsideClickToClose,
     selectCurrentBoard,
+    handleSettingsModal,
+    showModalNewTask,
+    closeModalNewTask,
+    handleChangeNewTask,
+    handleCreateSubTask,
+    handleSubmitTask,
   }
 
   return <MenuContext.Provider value={data}>{children} </MenuContext.Provider>

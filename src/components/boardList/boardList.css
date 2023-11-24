@@ -28,7 +28,7 @@
   display: flex;
   flex-direction: column;
 
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .board-list__item-link {

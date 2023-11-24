@@ -10,7 +10,7 @@ export const NavbarLogoDekstop = () => {
     <>
       {state.menuActive ? (
         <span className='boardList-container__txt'>
-          {state.currentBoard ? `${state.currentBoard.boardName}` : '🖍'}
+          {state.currentBoard ? `${state.currentBoard[0].boardName}` : '🖍'}
         </span>
       ) : (
         <>
@@ -18,7 +18,7 @@ export const NavbarLogoDekstop = () => {
             {state.menuTheme === 'dark' ? <LogoDark /> : <LogoLigth />}
           </div>
           <span className='boardList-container__txt'>
-            {state.currentBoard ? `${state.currentBoard.boardName}` : '🖍'}
+            {state.currentBoard && state.currentBoard[0].boardName}
           </span>
         </>
       )}

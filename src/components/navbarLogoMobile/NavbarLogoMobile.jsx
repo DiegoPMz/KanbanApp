@@ -6,6 +6,8 @@ import MenuContext from '../../context/menuContext'
 export const NavbarLogoMobile = () => {
   const { state, handleShowMenu } = useContext(MenuContext)
 
+  console.log()
+
   return (
     <>
       <LogoMobile />
@@ -13,7 +15,7 @@ export const NavbarLogoMobile = () => {
         onClick={handleShowMenu}
         className='boardList-container__btn'>
         <span className='boardList-container__txt'>
-          {state.currentBoard ? `${state.currentBoard.boardName}` : '🖍'}
+          {state.currentBoard ? state.currentBoard[0].boardName : '🖍'}
         </span>
         <IconChevron />
       </button>

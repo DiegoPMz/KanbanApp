@@ -2,6 +2,7 @@
   --txt-color: hsl(0, 0%, 100%);
   --primary-color: hsl(235, 12%, 19%);
   --secundary-color: hsl(235, 16%, 15%);
+  --txt-color-input: hsl(0, 0%, 100%);
 
   --btn-sec: hsl(0, 0%, 100%);
   --btn-sec-h: hsl(0, 0%, 100%);
@@ -29,7 +30,9 @@
   background-color: #000;
 }
 
-button {
+button,
+select,
+a {
   cursor: pointer;
 }
 
@@ -40,4 +43,27 @@ label {
 body {
   max-height: 100vh;
   max-height: 100dvh;
+}
+
+/* SCROLL TEST */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  background-color: var(--secundary-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: hsla(216, 15%, 57%, 0.384);
+  border-radius: 10px;
+}
+
+@keyframes showModal {
+  0% {
+    opacity: 0;
+    scale: 0.8;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
 }

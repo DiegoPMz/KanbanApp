@@ -9,7 +9,7 @@ export const KanbanMenu = () => {
   const { currenResolution, phone } = useScreenSize()
 
   return (
-    <div className='kanbanMenu-perimeter'>
+    <div className={`kanbanMenu-perimeter`}>
       {currenResolution === phone ? (
         <div className='kanbanMenu'>
           <BoardList />

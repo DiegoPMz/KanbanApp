@@ -10,16 +10,17 @@ export const BoardTheme = () => {
 
   const classThemePosition =
     state.menuTheme === 'dark'
-      ? 'BoardTheme_switchBtn--dark'
-      : 'BoardTheme_switchBtn--ligth'
+      ? 'BoardTheme_switchBtn-circle--dark'
+      : 'BoardTheme_switchBtn-circle--ligth'
 
   return (
     <div className='boardTheme-container'>
       <IconLigthTheme />
       <button
         onClick={handleChangeTheme}
-        className={`BoardTheme_switchBtn ${classThemePosition} `}>
-        <span className='BoardTheme_switchBtn-circle'></span>
+        className='BoardTheme_switchBtn'>
+        <span
+          className={`BoardTheme_switchBtn-circle ${classThemePosition} `}></span>
       </button>
       <IconDarkTheme />
     </div>

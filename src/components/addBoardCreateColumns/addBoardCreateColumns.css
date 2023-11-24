@@ -1,13 +1,10 @@
-/* .addBoardForm__boardform-containerColumns {
-} */
 .boardform-containerColumns__label {
   font-size: 0.75em;
   font-weight: 700;
   color: var(--txt-color-input);
-  /* margin-bottom: 8px; */
 }
 .boardform-containerColumns__containerNameList {
-  max-height: 7rem;
+  max-height: 115px;
 
   display: flex;
   flex-direction: column;
@@ -17,7 +14,7 @@
   padding-bottom: 0.75rem;
   padding-left: 1px;
 
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .boardform-containerColumns__btn {
