@@ -2,7 +2,7 @@ import './addBoardColumn.css'
 
 import { useContext } from 'react'
 import { IconCross } from '../../assets/IconCross'
-import MenuContext from '../../context/menuContext'
+import MenuContext from '../../context/MenuContext'
 
 export const AddBoardColumn = ({ id }) => {
   const { state, handleChangeNewBoard, handleDeleteColumn } =

@@ -66,7 +66,12 @@
   opacity: 0.25;
   pointer-events: none;
 
-  transition: opacity 0.2s ease-out;
+  transition:
+    opacity 0.2s ease-out,
+    background-color 0.25s ease-out;
+}
+.settings-container__add:hover {
+  background-color: var(--btn-prim-h);
 }
 
 .settings-container__add--currentBoard {

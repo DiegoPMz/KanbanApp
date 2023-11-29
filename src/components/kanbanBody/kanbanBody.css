@@ -1,11 +1,5 @@
 .kanbanBody {
   width: 100%;
-}
-
-/* test 👇👇👇 */
-
-.kanbanBody {
-  width: 100%;
   max-height: calc(100% - 72px) !important;
   height: 100%;
   overflow: auto;

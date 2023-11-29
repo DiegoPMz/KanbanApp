@@ -3,7 +3,8 @@ import { IconCross } from '../../assets/IconCross'
 import MenuContext from '../../context/menuContext'
 
 export const AddSubTask = ({ id }) => {
-  const { state, handleChangeNewTask } = useContext(MenuContext)
+  const { state, handleChangeNewTask, handleDeleteSubTask } =
+    useContext(MenuContext)
 
   const getValueElement = state.newTask.subtasks.find(
     (subtask) => subtask.id === id,
@@ -20,7 +21,7 @@ export const AddSubTask = ({ id }) => {
         value={getValueElement.content}
         onChange={(e) => handleChangeNewTask({ e, id })}
       />
-      <button>
+      <button onClick={() => handleDeleteSubTask(id)}>
         <IconCross />
       </button>
     </div>

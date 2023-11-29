@@ -23,6 +23,8 @@
 
   --input-check-h: hsl(242, 48%, 58%);
 
+  --modal-bg: rgba(0, 0, 0, 0.55);
+
   /* DARK MODE  ---> DEFAULT */
   --txt-color: hsl(0, 0%, 100%);
   --txt-color-input: hsl(0, 0%, 100%);

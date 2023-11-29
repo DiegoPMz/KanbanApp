@@ -1,9 +1,9 @@
-.addBoardForm__container {
+.editBoardModal__container {
   width: 100%;
   height: 100%;
 
   position: absolute;
-  z-index: 1200;
+  z-index: 1000;
   top: 0;
 
   background-color: var(--modal-bg);
@@ -13,7 +13,7 @@
   align-items: center;
 }
 
-.addBoardForm {
+.editBoardModal {
   width: 21.4375rem;
   padding: 1.5rem 0;
 
@@ -27,7 +27,7 @@
   animation: 0.35s showModal ease-out both;
 }
 
-.addBoardForm__title {
+.editBoardModal__title {
   width: 90%;
   color: var(--txt-color);
 
@@ -36,7 +36,7 @@
   text-align: left;
   padding-bottom: 1.5rem;
 }
-.addBoardForm__boardform {
+.editBoardModal__boardform {
   width: 90%;
 
   display: flex;
@@ -44,13 +44,13 @@
   gap: 1.5rem;
 }
 
-.boardform-containerName__label {
+.editBoardModal-containerName__label {
   font-size: 0.75em;
   font-weight: 700;
   color: var(--txt-color-input);
   margin-bottom: 8px;
 }
-.boardform-containerName__name {
+.editBoardModal-containerName__name {
   width: 100%;
 
   font-size: 0.8125em;
@@ -64,39 +64,39 @@
   border-radius: 4px;
   border: 1px solid rgba(130, 143, 163, 0.25);
 }
-.boardform-containerName__name::placeholder {
+.editBoardModal-containerName__name::placeholder {
   color: var(--subtitle-color);
 }
-.boardform-containerName__name:focus-visible {
+.editBoardModal-containerName__name:focus-visible {
   outline: 1px solid var(--input-check-h);
 }
 
 /* MEDIA */
 @media screen and (min-width: 768px) {
-  .addBoardForm {
+  .editBoardModal {
     width: 30rem;
     padding: 2rem 0;
   }
-  .addBoardForm__title {
+  .editBoardModal__title {
     width: 86%;
   }
-  .addBoardForm__boardform {
+  .editBoardModal__boardform {
     width: 86%;
   }
 }
 @media screen and (min-width: 1200px) {
-  .addBoardForm {
+  .editBoardModal {
     top: 30%;
   }
 }
 
-/* ERROR */
-.boardform-containerName__input--error {
+/*INPUTS ERROR */
+.editBoard-containerName__input--error {
   border-color: var(--btn-des);
   outline: none;
 }
 
-.boardform-containerName__input--error:focus-visible {
+.editBoard-containerName__input--error:focus-visible {
   outline: 1px var(--btn-des-h);
   border-color: var(--btn-des-h);
 }

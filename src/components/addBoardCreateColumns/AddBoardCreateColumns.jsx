@@ -1,7 +1,7 @@
 import './addBoardCreateColumns.css'
 
 import { useContext } from 'react'
-import MenuContext from '../../context/menuContext'
+import MenuContext from '../../context/MenuContext'
 import { AddBoardColumn } from '../addBoardColumn/AddBoardColumn'
 
 export const AddBoardCreateColumns = () => {

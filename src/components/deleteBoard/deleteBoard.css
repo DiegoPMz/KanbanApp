@@ -1,0 +1,5 @@
+.deleteBoard__boardName {
+  color: var(--btn-des);
+  font-weight: bold;
+  padding: 0 3px;
+}

@@ -27,7 +27,7 @@
   flex-direction: column;
   gap: 24px;
 
-  animation: 0.25s showModal ease-out both;
+  animation: 0.35s showModal ease-out both;
 }
 .addNewTask__title {
   width: 85%;

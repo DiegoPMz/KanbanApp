@@ -6,7 +6,7 @@ export const SingleTask = ({ task }) => {
       <a className='singleTask__item-link'>
         <h3 className='singleTask__item-title'> {task.title} </h3>
         <span className='singleTask__item-substasks'>
-          {`0 of ${task.subtasks.length + 1} subtasks`}
+          {`0 of ${task.subtasks.length} subtasks`}
         </span>
       </a>
     </li>

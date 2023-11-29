@@ -1,0 +1,130 @@
+.deleteBoard__container {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+
+  background-color: var(--modal-bg);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.deleteBoard {
+  width: 21.4375rem;
+  padding: 1.5rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  border-radius: 6px;
+  background-color: var(--primary-color);
+
+  animation: showModal 0.35s ease-out both;
+}
+/* 
+.deleteBoard__title {
+  color: var(--btn-des);
+  font-size: 1.125em;
+  font-weight: 700;
+}
+.deleteBoard__text {
+  color: var(--subtitle-color);
+
+  font-size: 0.8125em;
+  font-weight: 500;
+  line-height: 1.4375rem;
+}
+
+.deleteBoard__btn {
+  text-align: center;
+
+  font-size: 0.8125em;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.4375rem;
+
+  border-radius: 1.25rem;
+  padding: 9px 0;
+}
+.deleteBoard__btn--delete {
+  background-color: var(--btn-des);
+  color: hsl(0, 0%, 100%);
+
+  transition: background-color 0.25s ease-out;
+}
+.deleteBoard__btn--delete:hover {
+  background-color: var(--btn-des-h);
+}
+
+.deleteBoard__btn--cancel {
+  background-color: var(--btn-sec);
+  color: var(--input-check-h);
+  transition: background-color 0.25s ease-out;
+}
+.deleteBoard__btn--cancel:hover {
+  background-color: var(--btn-sec-h);
+} */
+
+.deleteBoard > h4 {
+  color: var(--btn-des);
+  font-size: 1.125em;
+  font-weight: 700;
+}
+.deleteBoard > p {
+  color: var(--subtitle-color);
+
+  font-size: 0.8125em;
+  font-weight: 500;
+  line-height: 1.4375rem;
+}
+
+.deleteBoard_btnContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.deleteBoard__btn {
+  width: 100%;
+  text-align: center;
+
+  font-size: 0.8125em;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.4375rem;
+
+  border-radius: 1.25rem;
+  padding: 9px 0;
+}
+.deleteBoard__btn--delete {
+  background-color: var(--btn-des);
+  color: hsl(0, 0%, 100%);
+
+  transition: background-color 0.25s ease-out;
+}
+.deleteBoard__btn--delete:hover {
+  background-color: var(--btn-des-h);
+}
+
+.deleteBoard__btn--cancel {
+  background-color: var(--btn-sec);
+  color: var(--input-check-h);
+  transition: background-color 0.25s ease-out;
+}
+.deleteBoard__btn--cancel:hover {
+  background-color: var(--btn-sec-h);
+}
+
+@media screen and (min-width: 768px) {
+  .deleteBoard {
+    width: 30rem;
+    padding: 2rem;
+  }
+
+  .deleteBoard_btnContainer {
+    flex-direction: row;
+  }
+}

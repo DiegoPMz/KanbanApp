@@ -40,6 +40,10 @@ label {
   cursor: pointer;
 }
 
+input {
+  outline: none;
+}
+
 body {
   max-height: 100vh;
   max-height: 100dvh;
@@ -48,7 +52,7 @@ body {
 /* SCROLL TEST */
 ::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
+  height: 7px;
   background-color: var(--secundary-color);
 }
 

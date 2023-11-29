@@ -7,6 +7,8 @@ import { useScreenSize } from '../../hooks/useScreenSize'
 import { AddBoardForm } from '../addBoardForm/AddBoardForm'
 import { AddNewTask } from '../addNewTask/AddNewTask'
 import { BtnShowMenu } from '../btnShowMenu/BtnShowMenu'
+import { DeleteBoard } from '../deleteBoard/DeleteBoard'
+import { EditBoardModal } from '../editBoardModal/EditBoardModal'
 import { KanbanBody } from '../kanbanBody/KanbanBody'
 import { KanbanMenu } from '../kanbanMenu/KanbanMenu'
 import { NavBar } from '../navBar/NavBar'
@@ -24,6 +26,8 @@ export const KanbanApp = () => {
       </main>
       {state.createBoardActive && <AddBoardForm />}
       {state.createNewTask && <AddNewTask />}
+      {state.deleteBoardModalActive && <DeleteBoard />}
+      {state.editBoardModalActive && <EditBoardModal />}
 
       {currenResolution !== phone && !state.menuActive && <BtnShowMenu />}
     </div>

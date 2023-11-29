@@ -86,8 +86,11 @@ export const AddNewTaskForm = () => {
             value={state.newTask.status}
             onChange={(e) => handleChangeNewTask({ e })}>
             <option
+              className='addNewTaskForm__select-option'
               value={''}
-              className='addNewTaskForm__select-option'></option>
+              disabled>
+              Select
+            </option>
             {state.currentBoard &&
               state.currentBoard[0].boardColumns.map((column) => (
                 <option

@@ -53,6 +53,34 @@ export const MenuContextProvider = ({ children }) => {
       : dispatch({ type: 'currentBoard-dekstop', payload: { ...board } })
   }
 
+  const deleteCurrentBoard = () => {
+    dispatch({ type: 'deleteCurrentBoard' })
+  }
+
+  const showModalEditBoard = () => {
+    dispatch({ type: 'editBoardModalShow' })
+  }
+  const closeModalEditBoard = (e) => {
+    if (!e.target.matches('.editBoardModal__container')) return
+    dispatch({ type: 'editBoardModalClose' })
+  }
+
+  const handleChangeEditBoard = ({ e, id }) => {
+    dispatch({
+      type: 'captureValuesEditBoard',
+      payload: { target: e.target, id },
+    })
+  }
+  const handleEditBoardNewColumn = () => {
+    dispatch({ type: 'editBoardCreateNewColumn' })
+  }
+  const handleEditBoardDeleteColumn = (id) => {
+    dispatch({ type: 'editBoardDeleteColumn', payload: { id } })
+  }
+  const handleEditBoardSubmitData = () => {
+    dispatch({ type: 'editBoardSubmitData' })
+  }
+
   const handleSettingsModal = () => {
     dispatch({ type: 'settingsModalActive' })
   }
@@ -72,6 +100,18 @@ export const MenuContextProvider = ({ children }) => {
   const handleCreateSubTask = () => {
     dispatch({ type: 'createSubTask' })
   }
+
+  const showModalDeleteCurrentBoard = () => {
+    dispatch({ type: 'deleteBoardModalShow' })
+  }
+  const closeModalDeleteCurrentBoard = () => {
+    dispatch({ type: 'deleteBoardModalClose' })
+  }
+
+  const handleDeleteSubTask = (id) => {
+    dispatch({ type: 'deleteSubtask', payload: { id } })
+  }
+
   const handleSubmitTask = (e) => {
     e.preventDefault()
     dispatch({ type: 'submitCreateNewTask' })
@@ -86,13 +126,23 @@ export const MenuContextProvider = ({ children }) => {
     handleCreateColumn,
     handleDeleteColumn,
     handleAddBoard,
-    outsideClickToClose,
     selectCurrentBoard,
+    deleteCurrentBoard,
+    showModalDeleteCurrentBoard,
+    closeModalDeleteCurrentBoard,
+    showModalEditBoard,
+    closeModalEditBoard,
+    handleChangeEditBoard,
+    handleEditBoardNewColumn,
+    handleEditBoardDeleteColumn,
+    handleEditBoardSubmitData,
+    outsideClickToClose,
     handleSettingsModal,
     showModalNewTask,
     closeModalNewTask,
     handleChangeNewTask,
     handleCreateSubTask,
+    handleDeleteSubTask,
     handleSubmitTask,
   }
 

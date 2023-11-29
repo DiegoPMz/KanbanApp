@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 import { IconBoard } from '../../assets/IconBoard'
-import MenuContext from '../../context/menuContext'
+import MenuContext from '../../context/MenuContext'
 
 export const Board = ({ data, id }) => {
   const { state, selectCurrentBoard } = useContext(MenuContext)
@@ -15,7 +15,7 @@ export const Board = ({ data, id }) => {
         onClick={() => selectCurrentBoard(data)}
         className={
           classCurrentBoard
-            ? 'board-list__item-link board-list__item-link--currentBoard '
+            ? 'board-list__item-link--currentBoard '
             : 'board-list__item-link'
         }>
         <IconBoard />

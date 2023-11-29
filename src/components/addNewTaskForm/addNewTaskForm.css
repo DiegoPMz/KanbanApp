@@ -1,3 +1,7 @@
+.iconCross-svg:hover {
+  color: var(--btn-des);
+}
+
 .addNewTaskForm {
   width: 85%;
   margin-inline: auto;
@@ -23,6 +27,9 @@
   border: 1px solid var(--border-color);
 
   outline: none;
+}
+.addNewTaskForm__input:focus-visible {
+  border-color: var(--input-check-h);
 }
 
 .addNewTaskForm__text-area {
@@ -106,8 +113,22 @@
   border-radius: 4px;
 
   border: 1px solid var(--border-color);
+  outline: none;
 }
+.addNewTaskForm__select:focus-visible {
+  border-color: var(--input-check-h);
+}
+
 .addNewTaskForm__select-option {
   background-color: var(--primary-color);
   color: var(--subtitle-color);
+}
+
+/* ERROR STYLES */
+
+.addNewTaskForm-input--error {
+  border-color: var(--btn-des);
+}
+.addNewTaskForm-input--error:focus-visible {
+  border-color: var(--btn-des-h);
 }
