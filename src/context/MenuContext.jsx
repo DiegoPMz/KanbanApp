@@ -117,6 +117,64 @@ export const MenuContextProvider = ({ children }) => {
     dispatch({ type: 'submitCreateNewTask' })
   }
 
+  // COMPLETE TASK
+  const showModalCompleteTask = ({ id }) => {
+    dispatch({ type: 'completeTaskModalShow', payload: { id } })
+  }
+
+  const closeModalCompleteTask = (e) => {
+    if (!e.target.matches('.infoTaskModal__container')) return
+
+    dispatch({ type: 'completeTaskModalClose' })
+  }
+
+  const onChangeCompleteTask = ({ target, id }) => {
+    dispatch({ type: 'onChangeCompleteTask', payload: { target, id } })
+  }
+
+  // EDIT CURRENT TASK
+  const showModalOptionsEditTask = () => {
+    dispatch({ type: 'editCurrentTaskModalActive' })
+  }
+
+  const showModalDeleteTask = () => {
+    dispatch({ type: 'deleteCurrentTaskModalActive' })
+  }
+
+  const showModalDeleteTaskClose = (e) => {
+    if (!e.target.matches('.deleteElementsBoard__container')) return
+
+    dispatch({ type: 'deleteCurrentTaskModalClose' })
+  }
+
+  const deleteTask = () => {
+    dispatch({ type: 'deleteCurrentTask' })
+  }
+
+  const showModalEditTask = () => {
+    dispatch({ type: 'editTaskModalShow' })
+  }
+  const closeModalEditTask = (e) => {
+    if (!e.target.matches('.editTaskModal__container')) return
+    dispatch({ type: 'editTaskModalClose' })
+  }
+
+  const onChangeEditTask = ({ target, id }) => {
+    dispatch({ type: 'editTaskCaptureValues', payload: { target, id } })
+  }
+
+  const createNewSubtaskEditTask = () => {
+    dispatch({ type: 'editTaskCreateNewSubtask' })
+  }
+  const deleteSubtaskEditTask = (id) => {
+    dispatch({ type: 'editTaskDeleteSubtask', payload: { id } })
+  }
+
+  const submitTaskEdit = (e) => {
+    e.preventDefault()
+    dispatch({ type: 'editTaskSubmitNewValues' })
+  }
+
   const data = {
     state,
     handleShowMenu,
@@ -144,6 +202,19 @@ export const MenuContextProvider = ({ children }) => {
     handleCreateSubTask,
     handleDeleteSubTask,
     handleSubmitTask,
+    showModalCompleteTask,
+    closeModalCompleteTask,
+    onChangeCompleteTask,
+    showModalOptionsEditTask,
+    showModalDeleteTask,
+    showModalDeleteTaskClose,
+    deleteTask,
+    showModalEditTask,
+    closeModalEditTask,
+    onChangeEditTask,
+    createNewSubtaskEditTask,
+    deleteSubtaskEditTask,
+    submitTaskEdit,
   }
 
   return <MenuContext.Provider value={data}>{children} </MenuContext.Provider>

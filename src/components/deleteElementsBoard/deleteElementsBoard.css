@@ -1,4 +1,4 @@
-.deleteBoard__container {
+.deleteElementsBoard__container {
   width: 100%;
   height: 100%;
   position: fixed;
@@ -11,7 +11,7 @@
   justify-content: center;
   align-items: center;
 }
-.deleteBoard {
+.deleteElementsBoard {
   width: 21.4375rem;
   padding: 1.5rem;
 
@@ -68,12 +68,12 @@
   background-color: var(--btn-sec-h);
 } */
 
-.deleteBoard > h4 {
+.deleteElementsBoard > h4 {
   color: var(--btn-des);
   font-size: 1.125em;
   font-weight: 700;
 }
-.deleteBoard > p {
+.deleteElementsBoard > p {
   color: var(--subtitle-color);
 
   font-size: 0.8125em;
@@ -81,13 +81,13 @@
   line-height: 1.4375rem;
 }
 
-.deleteBoard_btnContainer {
+.deleteElementsBoard_btnContainer {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.deleteBoard__btn {
+.deleteElementsBoard__btn {
   width: 100%;
   text-align: center;
 
@@ -99,32 +99,32 @@
   border-radius: 1.25rem;
   padding: 9px 0;
 }
-.deleteBoard__btn--delete {
+.deleteElementsBoard__btn--delete {
   background-color: var(--btn-des);
   color: hsl(0, 0%, 100%);
 
   transition: background-color 0.25s ease-out;
 }
-.deleteBoard__btn--delete:hover {
+.deleteElementsBoard__btn--delete:hover {
   background-color: var(--btn-des-h);
 }
 
-.deleteBoard__btn--cancel {
+.deleteElementsBoard__btn--cancel {
   background-color: var(--btn-sec);
   color: var(--input-check-h);
   transition: background-color 0.25s ease-out;
 }
-.deleteBoard__btn--cancel:hover {
+.deleteElementsBoard__btn--cancel:hover {
   background-color: var(--btn-sec-h);
 }
 
 @media screen and (min-width: 768px) {
-  .deleteBoard {
+  .deleteElementsBoard {
     width: 30rem;
     padding: 2rem;
   }
 
-  .deleteBoard_btnContainer {
+  .deleteElementsBoard_btnContainer {
     flex-direction: row;
   }
 }

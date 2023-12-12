@@ -3,6 +3,7 @@ import { generateUUID } from '../helpers/generateUUID'
 import { saveLocalStorage } from '../helpers/saveLocalStorage'
 import { validationBoard } from '../helpers/validationBoard'
 import { validationEditBoard } from '../helpers/validationEditBoard'
+import { validationEditTask } from '../helpers/validationEditTask'
 import { validationsTask } from '../helpers/validationsTask'
 
 const KEY_SAVE_ALLBOARDS = 'KEY_SAVE_ALLBOARDS'
@@ -16,6 +17,12 @@ export const menuState = {
   currentBoard: null,
   deleteBoardModalActive: false,
   editBoardModalActive: false,
+  completeTaskModalActive: false,
+  currentTask: null,
+  optionsEditTaskModalActive: false,
+  deleteTaskModalActive: false,
+  editTaskModalActive: false,
+
   allBoards: [
     ...saveLocalStorage({
       key: KEY_SAVE_ALLBOARDS,
@@ -30,7 +37,7 @@ export const menuState = {
   newTask: {
     title: '',
     description: '',
-    subtasks: [{ content: '', id: generateUUID() }],
+    subtasks: [{ content: '', id: generateUUID(), status: 'pending' }],
     status: '',
     id: generateUUID(),
   },
@@ -298,8 +305,13 @@ export const menuReducer = (state, action) => {
       return { ...state, editBoardModalActive: true }
     }
     case 'editBoardModalClose': {
+      const getCurrentBoard = state.allBoards.filter(
+        (board) => board.boardId === state.currentBoard[0].boardId,
+      )
+
       return {
         ...state,
+        currentBoard: getCurrentBoard,
         editBoardModalActive: false,
         settingsModalActive: false,
       }
@@ -347,7 +359,7 @@ export const menuReducer = (state, action) => {
           ...state.newTask,
           subtasks: [
             ...state.newTask.subtasks,
-            { content: '', id: generateUUID() },
+            { content: '', id: generateUUID(), status: 'pending' },
           ],
         },
       }
@@ -368,14 +380,19 @@ export const menuReducer = (state, action) => {
       const { error } = validationsTask()
       if (error.status || error.title) return { ...state }
 
+      const removeSubTaskEmpty = state.newTask.subtasks.filter(
+        (subtask) => subtask.content !== '',
+      )
+      const newTask = { ...state.newTask, subtasks: removeSubTaskEmpty }
+
       const modifiedCurrentBoard = {
         ...state.currentBoard[0],
         boardColumns: [
           ...state.currentBoard[0].boardColumns.map((column) =>
-            column.name === state.newTask.status
+            column.name === newTask.status
               ? {
                   ...column,
-                  task: [...column.task, { ...state.newTask }],
+                  task: [...column.task, { ...newTask }],
                 }
               : { ...column },
           ),
@@ -398,13 +415,363 @@ export const menuReducer = (state, action) => {
         newTask: {
           title: '',
           description: '',
-          subtasks: [{ content: '', id: generateUUID() }],
+          subtasks: [{ content: '', id: generateUUID(), status: 'pending' }],
           status: '',
           id: generateUUID(),
         },
         currentBoard: [modifiedCurrentBoard],
         allBoards: newAllBoardsState,
         createNewTask: false,
+      }
+    }
+    // COMPLETE TASK
+    case 'completeTaskModalShow': {
+      const { id } = action.payload
+
+      const currentBoardAllTasks = state.currentBoard[0].boardColumns
+        .map((column) => column.task)
+        .flat()
+
+      const currentTask = currentBoardAllTasks.find((task) => task.id === id)
+
+      return {
+        ...state,
+        completeTaskModalActive: true,
+        currentTask: { ...currentTask },
+      }
+    }
+    case 'completeTaskModalClose': {
+      const findColumnCurrentTask = state.currentBoard[0].boardColumns.find(
+        (column) =>
+          column.task.find((task) => task.id === state.currentTask.id),
+      )
+
+      let updateCurrentBoard
+
+      if (findColumnCurrentTask.name === state.currentTask.status) {
+        updateCurrentBoard = state.currentBoard[0].boardColumns.map((column) =>
+          column.name === state.currentTask.status
+            ? {
+                ...column,
+                task: column.task.map((task) =>
+                  task.id === state.currentTask.id
+                    ? { ...state.currentTask }
+                    : { ...task },
+                ),
+              }
+            : { ...column },
+        )
+      }
+      //
+      else if (findColumnCurrentTask.name !== state.currentTask.status) {
+        const removeCurrentTask = {
+          ...findColumnCurrentTask,
+          task: findColumnCurrentTask.task.filter(
+            (task) => task.id !== state.currentTask.id,
+          ),
+        }
+
+        const updateColumns = state.currentBoard[0].boardColumns.map(
+          (column) =>
+            column.id === removeCurrentTask.id
+              ? { ...removeCurrentTask }
+              : { ...column },
+        )
+
+        updateCurrentBoard = updateColumns.map((column) =>
+          column.name === state.currentTask.status
+            ? { ...column, task: [...column.task, { ...state.currentTask }] }
+            : { ...column },
+        )
+      }
+
+      const updateAllBoards = state.allBoards.map((board) =>
+        board.boardId === state.currentBoard[0].boardId
+          ? { ...state.currentBoard[0], boardColumns: updateCurrentBoard }
+          : { ...board },
+      )
+
+      const newAllBoardsState = saveLocalStorage({
+        key: KEY_SAVE_ALLBOARDS,
+        data: updateAllBoards,
+      })
+
+      return {
+        ...state,
+        currentBoard: [
+          { ...state.currentBoard[0], boardColumns: updateCurrentBoard },
+        ],
+        currentTask: null,
+        completeTaskModalActive: false,
+        editTaskModalActive: false,
+        optionsEditTaskModalActive: state.optionsEditTaskModalActive && false,
+        allBoards: newAllBoardsState,
+      }
+    }
+    case 'onChangeCompleteTask': {
+      const { target, id } = action.payload
+      const { name, value } = target
+
+      if (name === 'subtask_status') {
+        const SUBTASK_COMPLETE = 'complete'
+        const SUBTASK_PENDIGN = 'pending'
+
+        // const addNewStatus = state.currentTask.subtasks.map((sub) =>
+        //   sub.id === id
+        //     ? {
+        //         ...sub,
+        //         status:
+        //           sub.status === SUBTASK_PENDIGN
+        //             ? SUBTASK_COMPLETE
+        //             : SUBTASK_PENDIGN,
+        //       }
+        //     : { ...sub },
+        // )
+
+        // const getColmunModified = state.currentBoard[0].boardColumns.find(
+        //   (column) =>
+        //     column.task.find((task) => task.id === state.currentTask.id),
+        // )
+
+        // const setNewValuesTask = {
+        //   ...getColmunModified,
+        //   task: [
+        //     ...getColmunModified.task.map((task) =>
+        //       task.id === state.currentTask.id
+        //         ? { ...state.currentTask, subtasks: [...addNewStatus] }
+        //         : { ...task },
+        //     ),
+        //   ],
+        // }
+
+        // const addNewTaskState = state.currentBoard[0].boardColumns.map(
+        //   (column) =>
+        //     column.name === setNewValuesTask.name
+        //       ? { ...setNewValuesTask }
+        //       : { ...column },
+        // )
+
+        // return {
+        //   ...state,
+        //   currentTask: { ...state.currentTask, subtasks: [...addNewStatus] },
+        //   currentBoard: [
+        //     { ...state.currentBoard[0], boardColumns: [...addNewTaskState] },
+        //   ],
+        // }
+
+        const addNewStatus = state.currentTask.subtasks.map((sub) =>
+          sub.id === id
+            ? {
+                ...sub,
+                status:
+                  sub.status === SUBTASK_PENDIGN
+                    ? SUBTASK_COMPLETE
+                    : SUBTASK_PENDIGN,
+              }
+            : { ...sub },
+        )
+
+        return {
+          ...state,
+          currentTask: { ...state.currentTask, subtasks: [...addNewStatus] },
+        }
+      }
+
+      if (name === 'task_status') {
+        return {
+          ...state,
+          currentTask: { ...state.currentTask, status: value },
+        }
+      }
+
+      break
+    }
+
+    // EDIT TASK
+
+    case 'editCurrentTaskModalActive': {
+      return {
+        ...state,
+        optionsEditTaskModalActive: !state.optionsEditTaskModalActive,
+      }
+    }
+    case 'deleteCurrentTaskModalActive': {
+      return {
+        ...state,
+        optionsEditTaskModalActive: false,
+        deleteTaskModalActive: !state.deleteTaskModalActive,
+      }
+    }
+    case 'deleteCurrentTaskModalClose': {
+      return {
+        ...state,
+        editTaskModalActive: false,
+        deleteTaskModalActive: false,
+      }
+    }
+    case 'deleteCurrentTask': {
+      const columnsDeleteTask = state.currentBoard[0].boardColumns.map(
+        (column) =>
+          column.task.find((task) => task.id !== state.currentTask.id)
+            ? {
+                ...column,
+                task: column.task.filter(
+                  (task) => task.id !== state.currentTask.id,
+                ),
+              }
+            : { ...column },
+      )
+
+      const newCurrentBoard = [
+        { ...state.currentBoard[0], boardColumns: columnsDeleteTask },
+      ]
+
+      const updateAllBoards = state.allBoards.map((board) =>
+        board.boardId === state.currentBoard[0].boardId
+          ? { ...newCurrentBoard[0] }
+          : { ...board },
+      )
+
+      const newAllBoardsState = saveLocalStorage({
+        key: KEY_SAVE_ALLBOARDS,
+        data: updateAllBoards,
+      })
+
+      return {
+        ...state,
+        currentBoard: newCurrentBoard,
+        completeTaskModalActive: false,
+        deleteTaskModalActive: false,
+        currentTask: null,
+        allBoards: newAllBoardsState,
+      }
+    }
+    case 'editTaskModalShow': {
+      return {
+        ...state,
+        optionsEditTaskModalActive: false,
+        editTaskModalActive: true,
+      }
+    }
+    case 'editTaskModalClose': {
+      const searchCurrentTask = state.currentBoard[0].boardColumns.find(
+        (column) =>
+          column.task.find((task) => task.id === state.currentTask.id),
+      )
+      const prevCurrentTask = searchCurrentTask.task.find(
+        (task) => task.id === state.currentTask.id,
+      )
+
+      let taskTitle = state.currentTask.title
+      let taskSubtasks = state.currentTask.subtasks
+
+      if (!state.currentTask.title) taskTitle = prevCurrentTask.title
+
+      if (state.currentTask.subtasks.some((sub) => sub.content === '')) {
+        const emptysubTask = state.currentTask.subtasks.filter(
+          (sub) => sub.content === '' && sub.id,
+        )
+
+        const resetSubtask = prevCurrentTask.subtasks.map((prev) =>
+          emptysubTask.find((empty) => empty.id === prev.id)
+            ? {
+                ...prev,
+                status: emptysubTask.find((sub) => sub.id === prev.id).status,
+              }
+            : { ...prev },
+        )
+
+        taskSubtasks = resetSubtask
+      }
+
+      return {
+        ...state,
+        currentTask: {
+          ...state.currentTask,
+          title: taskTitle,
+          subtasks: taskSubtasks,
+        },
+        editTaskModalActive: false,
+      }
+    }
+    case 'editTaskCaptureValues': {
+      const { target, id } = action.payload
+      const { value, name } = target
+
+      if (name === 'subTask-editTask') {
+        const subTaskEdit = state.currentTask.subtasks.map((sub) =>
+          sub.id === id ? { ...sub, content: value } : { ...sub },
+        )
+
+        return {
+          ...state,
+          currentTask: { ...state.currentTask, subtasks: subTaskEdit },
+        }
+      }
+
+      return { ...state, currentTask: { ...state.currentTask, [name]: value } }
+    }
+    case 'editTaskCreateNewSubtask': {
+      return {
+        ...state,
+        currentTask: {
+          ...state.currentTask,
+          subtasks: [
+            ...state.currentTask.subtasks,
+            { content: '', id: generateUUID(), status: 'pending' },
+          ],
+        },
+      }
+    }
+    case 'editTaskDeleteSubtask': {
+      const { id } = action.payload
+
+      const removeSubtask = state.currentTask.subtasks.filter(
+        (sub) => sub.id !== id,
+      )
+
+      return {
+        ...state,
+        currentTask: {
+          ...state.currentTask,
+          subtasks: removeSubtask,
+        },
+      }
+    }
+    case 'editTaskSubmitNewValues': {
+      const { error } = validationEditTask()
+      if (error.title || error.subtask) return { ...state }
+
+      const uptdateColumnsTaskEdit = state.currentBoard[0].boardColumns.map(
+        (column) =>
+          column.boardName === state.currentTask.status
+            ? {
+                ...column,
+                task: column.task.map((task) =>
+                  task.id === state.currentTask.id
+                    ? { ...state.currentTask }
+                    : { ...task },
+                ),
+              }
+            : { ...column },
+      )
+
+      const updateAllBoards = state.allBoards.map((board) =>
+        board.boardId === state.currentBoard[0].boardId
+          ? { ...state.currentBoard[0], boardColumns: uptdateColumnsTaskEdit }
+          : { ...board },
+      )
+
+      const newAllBoardsState = saveLocalStorage({
+        key: KEY_SAVE_ALLBOARDS,
+        data: updateAllBoards,
+      })
+
+      return {
+        ...state,
+        allBoards: newAllBoardsState,
+        editTaskModalActive: false,
+        optionsEditTaskModalActive: false,
       }
     }
 

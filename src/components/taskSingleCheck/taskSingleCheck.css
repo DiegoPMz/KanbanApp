@@ -1,0 +1,97 @@
+.infoTaskModal__subtasksForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.infoTaskModal__subtasksForm-subtaskCheck {
+  background-color: var(--secundary-color);
+  padding: 0.875rem 0.75rem;
+  border-radius: 4px;
+
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.subtaskCheck__checkBox {
+  height: 1rem;
+  min-width: 1rem;
+
+  background-color: #fff;
+  border-radius: 2px;
+  transition: background-color 0.2s ease-out;
+  cursor: pointer;
+}
+
+.subtaskCheck__checkBox--complete {
+  background-color: var(--btn-prim);
+  background-image: url(../../assets/icon-check.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.subtaskCheck__subtaskContent {
+  color: var(--txt-color);
+  font-size: 0.75em;
+  font-weight: 700;
+}
+.subtaskCheck__subtaskContent--complete {
+  color: var(--subtitle-color);
+  text-decoration: line-through;
+}
+
+/* @media screen and (min-width: 768px) {
+  .infoTaskModal__subtasksForm {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: darkblue;
+  }
+  
+  .infoTaskModal__subtasksForm-subtaskCheck {
+    background-color: var(--secundary-color);
+    padding: 14px 12px;
+    border-radius: 4px;
+  
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .subtaskCheck__checkBox {
+    height: 16px;
+    min-width: 16px;
+  
+    background-color: #fff;
+    border-radius: 2px;
+    transition: background-color 0.2s ease-out;
+    cursor: pointer;
+  }
+  
+  .subtaskCheck__checkBox:checked {
+    background-color: var(--btn-prim);
+    width: 16px;
+    height: 16px;
+  }
+  .active {
+    width: 100%;
+    height: 100%;
+  
+    background-image: url(../../assets/icon-check.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  
+  .subtaskCheck__subtaskContent {
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  
+  .subtaskCheck__subtaskContent--complete {
+    color: var(--subtitle-color);
+    text-decoration: line-through;
+  }
+  
+} */

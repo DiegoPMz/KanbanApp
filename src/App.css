@@ -31,7 +31,6 @@
 }
 
 button,
-select,
 a {
   cursor: pointer;
 }
@@ -52,7 +51,8 @@ body {
 /* SCROLL TEST */
 ::-webkit-scrollbar {
   width: 6px;
-  height: 7px;
+  height: 5px;
+
   background-color: var(--secundary-color);
 }
 

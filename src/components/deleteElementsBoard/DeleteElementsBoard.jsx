@@ -9,18 +9,18 @@ export const DeleteElementsBoard = ({
   return (
     <div
       onClick={handleCloseModal && handleCloseModal}
-      className='deleteBoard__container'>
-      <div className='deleteBoard'>
+      className='deleteElementsBoard__container'>
+      <div className='deleteElementsBoard'>
         {children}
-        <div className='deleteBoard_btnContainer'>
+        <div className='deleteElementsBoard_btnContainer'>
           <button
             onClick={handleDelete && handleDelete}
-            className='deleteBoard__btn deleteBoard__btn--delete'>
+            className='deleteElementsBoard__btn deleteElementsBoard__btn--delete'>
             Delete
           </button>
           <button
             onClick={handleCancel && handleCancel}
-            className='deleteBoard__btn deleteBoard__btn--cancel'>
+            className='deleteElementsBoard__btn deleteElementsBoard__btn--cancel'>
             Cancel
           </button>
         </div>

@@ -1,0 +1,63 @@
+.iconCheck-icon {
+  width: 10px;
+  height: 8px;
+  color: hsl(0, 0%, 100%);
+}
+
+.infoTaskModal__subtasks {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.infoTaskModal__completeNumber {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--txt-color);
+}
+
+.infoTaskModal__container-status {
+  width: 100%;
+  padding-top: 8px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.infoTaskModal__title-status {
+  color: var(--txt-color);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.infoTaskModal__select-status {
+  width: 100%;
+
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  outline: none;
+  color: var(--txt-color);
+  padding: 8px;
+  padding-left: 16px;
+
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 23px;
+}
+.infoTaskModal__select-status:focus-visible {
+  border: 1px solid var(--btn-prim);
+}
+
+.infoTaskModal__option-status {
+  background-color: var(--secundary-color);
+}
+
+.infoTaskModal-substasks__complete {
+  display: flex;
+  gap: 4px;
+}
+.infoTaskModal-substasks__complete-btn {
+  width: fit-content;
+  padding: 3px 2px;
+  background-color: green;
+  border-radius: 50%;
+}

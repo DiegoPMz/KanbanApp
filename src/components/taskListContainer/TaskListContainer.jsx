@@ -1,7 +1,7 @@
 import './taskListContainer.css'
 
 import { useContext } from 'react'
-import MenuContext from '../../context/menuContext'
+import MenuContext from '../../context/MenuContext'
 import { TaskList } from '../taskList/TaskList'
 
 export const TaskListContainer = () => {

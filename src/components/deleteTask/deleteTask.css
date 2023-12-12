@@ -1,0 +1,4 @@
+.deleteTask__taskName {
+  color: var(--btn-des);
+  padding: 0 2px;
+}

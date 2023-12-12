@@ -4,11 +4,8 @@ import { useContext } from 'react'
 
 import MenuContext from '../../context/MenuContext'
 import { useScreenSize } from '../../hooks/useScreenSize'
-import { AddBoardForm } from '../addBoardForm/AddBoardForm'
-import { AddNewTask } from '../addNewTask/AddNewTask'
 import { BtnShowMenu } from '../btnShowMenu/BtnShowMenu'
-import { DeleteBoard } from '../deleteBoard/DeleteBoard'
-import { EditBoardModal } from '../editBoardModal/EditBoardModal'
+import { KanbanAppModals } from '../kanbanAppModals/KanbanAppModals'
 import { KanbanBody } from '../kanbanBody/KanbanBody'
 import { KanbanMenu } from '../kanbanMenu/KanbanMenu'
 import { NavBar } from '../navBar/NavBar'
@@ -24,11 +21,8 @@ export const KanbanApp = () => {
         <NavBar />
         <KanbanBody />
       </main>
-      {state.createBoardActive && <AddBoardForm />}
-      {state.createNewTask && <AddNewTask />}
-      {state.deleteBoardModalActive && <DeleteBoard />}
-      {state.editBoardModalActive && <EditBoardModal />}
 
+      <KanbanAppModals />
       {currenResolution !== phone && !state.menuActive && <BtnShowMenu />}
     </div>
   )

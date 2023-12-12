@@ -1,7 +1,7 @@
 import './kanbanBody.css'
 
 import { useContext } from 'react'
-import MenuContext from '../../context/menuContext'
+import MenuContext from '../../context/MenuContext'
 import { TaskListContainer } from '../taskListContainer/TaskListContainer'
 
 export const KanbanBody = () => {

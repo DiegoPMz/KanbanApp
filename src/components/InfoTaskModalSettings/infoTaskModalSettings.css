@@ -1,0 +1,45 @@
+.infoTaskModalSettings {
+  width: 12rem;
+  height: 5.875rem;
+
+  position: absolute;
+  z-index: 5000;
+  top: -4.6875rem;
+  right: 0.9375rem;
+
+  border-radius: 8px;
+  background-color: var(--secundary-color);
+  box-shadow: 0px 10px 20px 0px var(--singleTask-boxShadow);
+
+  padding: 1rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  animation: 0.35s showModal ease-out both;
+}
+
+.infoTaskModalSettings__btn {
+  font-size: 0.8125em;
+  font-weight: 500;
+  line-height: 1.4375rem;
+}
+.infoTaskModalSettings__btn--edit {
+  color: var(--subtitle-color);
+}
+.infoTaskModalSettings__btn--delete {
+  color: var(--btn-des);
+  transition: color 0.25s ease-out;
+}
+.infoTaskModalSettings__btn--delete:hover {
+  color: var(--btn-des-h);
+}
+
+@media screen and (min-width: 768px) {
+  .infoTaskModalSettings {
+    top: 4.0625rem;
+    right: -3.75rem;
+  }
+}
