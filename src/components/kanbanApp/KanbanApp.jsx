@@ -22,6 +22,13 @@ export const KanbanApp = () => {
         <KanbanBody />
       </main>
 
+      <span>
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloremque
+        sapiente iste quo magni. Qui eveniet, itaque dolore animi iste hic
+        ullam? Est fuga quaerat perspiciatis exercitationem odio maxime vitae
+        molestiae?
+      </span>
+
       <KanbanAppModals />
       {currenResolution !== phone && !state.menuActive && <BtnShowMenu />}
     </div>
