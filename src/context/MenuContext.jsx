@@ -175,6 +175,13 @@ export const MenuContextProvider = ({ children }) => {
     dispatch({ type: 'editTaskSubmitNewValues' })
   }
 
+  const handleDragEnd = (event, column) => {
+    console.log(event)
+    console.log(column)
+
+    dispatch({ type: 'dndTaskCurrentBoard', payload: { event, column } })
+  }
+
   const data = {
     state,
     handleShowMenu,
@@ -215,6 +222,7 @@ export const MenuContextProvider = ({ children }) => {
     createNewSubtaskEditTask,
     deleteSubtaskEditTask,
     submitTaskEdit,
+    handleDragEnd,
   }
 
   return <MenuContext.Provider value={data}>{children} </MenuContext.Provider>

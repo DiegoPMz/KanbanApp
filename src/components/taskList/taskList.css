@@ -1,14 +1,14 @@
 .taskList {
-  height: fit-content;
-  min-width: fit-content;
+  min-width: 280px;
+  max-width: 280px;
 
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 
-  /* test */
   height: 100%;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .taskList__title {
   display: flex;
@@ -20,9 +20,6 @@
   height: 0.9375rem;
 
   border-radius: 50%;
-
-  /* 👇 feature */
-  background-color: lightyellow;
 }
 .taskList__title-name {
   color: var(--subtitle-color);
@@ -35,4 +32,5 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  touch-action: pan-y;
 }

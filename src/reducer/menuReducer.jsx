@@ -1,3 +1,4 @@
+import { arrayMove } from '@dnd-kit/sortable'
 import { currentTheme } from '../helpers/currentTheme'
 import { generateUUID } from '../helpers/generateUUID'
 import { saveLocalStorage } from '../helpers/saveLocalStorage'
@@ -314,6 +315,55 @@ export const menuReducer = (state, action) => {
         currentBoard: getCurrentBoard,
         editBoardModalActive: false,
         settingsModalActive: false,
+      }
+    }
+
+    case 'dndTaskCurrentBoard': {
+      const { event, column } = action.payload
+      const { active, over } = event
+
+      const columnToDnD = state.currentBoard[0].boardColumns.find(
+        (col) => col.id === column.id,
+      )
+
+      const oldTaskPositions = columnToDnD.task
+
+      const prevPosition = columnToDnD.task.findIndex(
+        (task) => task.id === active.id,
+      )
+
+      const newPosition = columnToDnD.task.findIndex(
+        (task) => task.id === over.id,
+      )
+
+      const taskNewOrder = arrayMove(
+        oldTaskPositions,
+        prevPosition,
+        newPosition,
+      )
+
+      const updateCurrentBoard = {
+        ...state.currentBoard[0],
+        boardColumns: state.currentBoard[0].boardColumns.map((col) =>
+          col.id === column.id ? { ...column, task: taskNewOrder } : { ...col },
+        ),
+      }
+
+      const updateAllBoards = state.allBoards.map((board) =>
+        board.boardId === updateCurrentBoard.boardId
+          ? { ...updateCurrentBoard }
+          : { ...board },
+      )
+
+      saveLocalStorage({
+        key: KEY_SAVE_ALLBOARDS,
+        data: updateAllBoards,
+      })
+
+      return {
+        ...state,
+        currentBoard: [{ ...updateCurrentBoard }],
+        allBoards: updateAllBoards,
       }
     }
 
