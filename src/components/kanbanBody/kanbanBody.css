@@ -3,6 +3,7 @@
   max-height: calc(100% - 72px) !important;
   height: 100%;
   overflow: auto;
+  position: relative;
 }
 
 /* 80px height of "NAVBAR" */

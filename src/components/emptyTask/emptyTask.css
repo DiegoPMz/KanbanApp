@@ -1,11 +1,19 @@
 .kanbanBody__emptyTask {
-  height: 45vh;
+  width: fit-content;
+  height: fit-content;
 
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   align-items: center;
   gap: 1.5rem;
+
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  margin: auto;
 }
 
 .kanbanBody__emptyTask-message {
