@@ -3,7 +3,7 @@ import './boardTheme.css'
 import { useContext } from 'react'
 import { IconDarkTheme } from '../../assets/IconDarkTheme'
 import { IconLigthTheme } from '../../assets/IconLigthTheme'
-import MenuContext from '../../context/menuContext'
+import MenuContext from '../../context/MenuContext'
 
 export const BoardTheme = () => {
   const { state, handleChangeTheme } = useContext(MenuContext)
