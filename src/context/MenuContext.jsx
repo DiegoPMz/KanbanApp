@@ -176,9 +176,6 @@ export const MenuContextProvider = ({ children }) => {
   }
 
   const handleDragEnd = (event, column) => {
-    console.log(event)
-    console.log(column)
-
     dispatch({ type: 'dndTaskCurrentBoard', payload: { event, column } })
   }
 

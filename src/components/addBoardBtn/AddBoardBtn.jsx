@@ -2,7 +2,7 @@ import './addBoardBtn.css'
 
 import { useContext } from 'react'
 import { IconBoard } from '../../assets/IconBoard'
-import MenuContext from '../../context/menuContext'
+import MenuContext from '../../context/MenuContext'
 
 export const AddBoardBtn = () => {
   const { handleCreateBoard } = useContext(MenuContext)

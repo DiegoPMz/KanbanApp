@@ -1,7 +1,6 @@
 import './kanbanApp.css'
 
 import { useContext } from 'react'
-
 import MenuContext from '../../context/MenuContext'
 import { useScreenSize } from '../../hooks/useScreenSize'
 import { BtnShowMenu } from '../btnShowMenu/BtnShowMenu'

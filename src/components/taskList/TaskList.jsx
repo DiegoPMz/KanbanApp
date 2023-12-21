@@ -49,6 +49,7 @@ export const TaskList = ({ column, position }) => {
               parseInt(position) + 1
             })`}</span>
           </h2>
+
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
