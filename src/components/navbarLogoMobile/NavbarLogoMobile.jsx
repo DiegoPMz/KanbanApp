@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { IconChevron } from '../../assets/IconChevron'
 import { LogoMobile } from '../../assets/LogoMobile'
-import MenuContext from '../../context/menuContext'
+import MenuContext from '../../context/MenuContext'
 
 export const NavbarLogoMobile = () => {
   const { state, handleShowMenu } = useContext(MenuContext)

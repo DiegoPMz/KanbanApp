@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 import { IconCross } from '../../assets/IconCross'
-import MenuContext from '../../context/menuContext'
+import MenuContext from '../../context/MenuContext'
 
 export const AddSubTask = ({ id }) => {
   const { state, handleChangeNewTask, handleDeleteSubTask } =

@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { LogoDark } from '../../assets/LogoDark'
 import { LogoLigth } from '../../assets/LogoLigth'
-import MenuContext from '../../context/menuContext'
+import MenuContext from '../../context/MenuContext'
 
 export const NavbarLogoDekstop = () => {
   const { state } = useContext(MenuContext)

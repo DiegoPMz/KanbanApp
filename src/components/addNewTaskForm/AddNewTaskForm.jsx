@@ -2,7 +2,7 @@ import './addNewTaskForm.css'
 
 import { useContext } from 'react'
 import { IconChevron } from '../../assets/IconChevron'
-import MenuContext from '../../context/menuContext'
+import MenuContext from '../../context/MenuContext'
 import { AddSubTask } from '../addSubTask/AddSubTask'
 
 export const AddNewTaskForm = () => {

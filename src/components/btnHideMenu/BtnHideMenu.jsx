@@ -2,7 +2,7 @@ import './btnHideMenu.css'
 
 import { useContext } from 'react'
 import { IconHideSideBar } from '../../assets/IconHideSideBar'
-import MenuContext from '../../context/menuContext'
+import MenuContext from '../../context/MenuContext'
 
 export const BtnHideMenu = () => {
   const { handleShowMenu } = useContext(MenuContext)
