@@ -1,14 +1,20 @@
-import js from "@eslint/js"
-import eslintConfigPrettier from "eslint-config-prettier/flat"
-import reactHooks from "eslint-plugin-react-hooks"
-import reactRefresh from "eslint-plugin-react-refresh"
-import globals from "globals"
-import tseslint from "typescript-eslint"
+import js from "@eslint/js";
+import pluginRouter from "@tanstack/eslint-plugin-router";
+import eslintConfigPrettier from "eslint-config-prettier/flat"; // <-- faltaba
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import globals from "globals";
+import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-	{ ignores: ["dist", "legacy"] },
+	{ ignores: ["dist", "legacy", "routeTree.gen.ts"] },
 	{
-		extends: [js.configs.recommended, ...tseslint.configs.strict],
+		extends: [
+			js.configs.recommended,
+			...tseslint.configs.strict,
+			pluginRouter.configs["flat/recommended"],
+			eslintConfigPrettier,
+		],
 		files: ["**/*.{ts,tsx}"],
 		languageOptions: {
 			ecmaVersion: 2020,
@@ -26,5 +32,4 @@ export default tseslint.config(
 			],
 		},
 	},
-	eslintConfigPrettier,
-)
+);
