@@ -1,4 +1,8 @@
-import { user } from "@/features/user/domain/user.model";
+import {
+	SESSION_TYPES,
+	THEME_TYPES,
+	User,
+} from "@/features/user/domain/user.model";
 import { IUserRepository } from "@/features/user/domain/user.repository";
 import { Result } from "@/shared/lib/result";
 
@@ -11,14 +15,14 @@ type LoginDemoResponse = Result<LoginDemoDto>;
 export const loginDemo = (userRepository: IUserRepository) => {
 	return {
 		handle: async (): Promise<LoginDemoResponse> => {
-			const userPersisted = await userRepository.details();
+			const userPersisted = await userRepository.getDetails();
 			if (userPersisted.isSuccess)
 				return Result.Success({ id: userPersisted.value.id });
 
-			const demoUser = user({
+			const demoUser = User({
 				email: null,
-				theme: "light",
-				sessionType: "DEMO",
+				theme: THEME_TYPES.LIGHT,
+				sessionType: SESSION_TYPES.DEMO,
 			});
 
 			if (!demoUser.isSuccess) throw new Error("Failed to create demo user");
