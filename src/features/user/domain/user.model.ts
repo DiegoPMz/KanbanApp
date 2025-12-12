@@ -1,8 +1,10 @@
-import { AppError, Result } from "@/shared/lib/result";
-import { validateEmail } from "./user.email.validation";
-import { validateId } from "./user.id.validation";
-import { validateSessionType } from "./user.session-type.validation";
-import { validateTheme } from "./user.theme.validation";
+import { Result } from "@/shared/lib/result";
+import {
+	userEmailErrors,
+	userIdErrors,
+	userSessionTypeErrors,
+	userThemeErrors,
+} from "./user.errors";
 
 export const SESSION_TYPES = {
 	DEMO: "DEMO",
@@ -24,27 +26,42 @@ export interface UserModel {
 type UserInput = Omit<UserModel, "id"> & { id?: string };
 
 export const User = (data: UserInput): Result<UserModel> => {
-	const userErrors: AppError[] = [];
+	if (!Object.values(SESSION_TYPES).includes(data.sessionType))
+		return Result.Error([
+			{
+				code: userSessionTypeErrors.code,
+				message: userSessionTypeErrors.messages.invalid,
+			},
+		]);
 
-	const idOrError = validateId(data.sessionType, data.id);
-	if (!idOrError.isSuccess) userErrors.push(idOrError.errors[0]);
+	if (data.sessionType === SESSION_TYPES.REGISTER && !data.id)
+		return Result.Error([
+			{
+				code: userIdErrors.code,
+				message: userIdErrors.messages.registeredWithoutId,
+			},
+		]);
 
-	const emailOrError = validateEmail(data.email, data.id);
-	if (!emailOrError.isSuccess) userErrors.push(emailOrError.errors[0]);
+	if (data.sessionType === SESSION_TYPES.REGISTER && !data.email)
+		return Result.Error([
+			{
+				code: userEmailErrors.code,
+				message: userEmailErrors.messages.registeredWithoutEmail,
+			},
+		]);
 
-	const themeOrError = validateTheme(data.theme);
-	if (!themeOrError.isSuccess) userErrors.push(themeOrError.errors[0]);
-
-	const sessionTypeOrError = validateSessionType(data.sessionType, data.id);
-	if (!sessionTypeOrError.isSuccess)
-		userErrors.push(sessionTypeOrError.errors[0]);
-
-	if (userErrors.length > 0) return Result.Error(userErrors);
+	if (!Object.values(THEME_TYPES).includes(data.theme))
+		return Result.Error([
+			{
+				code: userThemeErrors.code,
+				message: userThemeErrors.messages.invalid,
+			},
+		]);
 
 	return Result.Success({
-		id: idOrError.value || crypto.randomUUID(),
-		email: emailOrError.value,
-		theme: themeOrError.value,
-		sessionType: sessionTypeOrError.value,
+		sessionType: data.sessionType,
+		id: data.id || crypto.randomUUID(),
+		email: data.sessionType === SESSION_TYPES.REGISTER ? data.email : null,
+		theme: data.theme,
 	});
 };

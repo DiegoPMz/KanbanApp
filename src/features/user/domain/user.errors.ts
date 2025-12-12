@@ -26,5 +26,6 @@ export const userIdErrors = {
 	code: "USER_ID_INVALID",
 	messages: {
 		registeredWithoutId: "User ID is required for registered users.",
+		invalid: "The user ID is required",
 	},
 };
