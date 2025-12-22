@@ -1,4 +1,4 @@
-import { httpClient } from "@/shared/api/httpClient";
+import { httpClient } from "@/shared/api/api.client";
 import { Result } from "@/shared/lib/result";
 import { AxiosError } from "axios";
 import { IAuthRepository } from "../application/auth.repository";

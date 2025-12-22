@@ -1,4 +1,4 @@
-import { httpClient } from "@/shared/api/httpClient";
+import { httpClient } from "@/shared/api/api.client";
 import { IExternalAuthRedirect } from "../application/auth.external-redirect";
 
 export const externalRedirectWeb: IExternalAuthRedirect = {
