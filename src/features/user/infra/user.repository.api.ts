@@ -1,4 +1,4 @@
-import { httpClient } from "@/shared/api/httpClient";
+import { httpClient } from "@/shared/api/api.client";
 import { Result } from "@/shared/lib/result";
 import { userIdErrors, userThemeErrors } from "../domain/user.errors";
 import { SESSION_TYPES, UserModel } from "../domain/user.model";
