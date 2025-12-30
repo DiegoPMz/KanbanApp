@@ -5,14 +5,6 @@ import { Board, BoardModel } from "./../domain/board.domain";
 
 const BOARD_STORAGE_KEY = "DEMO_KANBAN_BOARD";
 
-const boardEntitySchema = z.object({
-	id: z.uuid(),
-	name: z.string(),
-});
-
-const boardEntityCollectionSchema = z.array(boardEntitySchema);
-type BoardEntityCollection = z.infer<typeof boardEntityCollectionSchema>;
-
 export const sessionStorageBoardRepository: IBoardRepository = {
 	getSummaries: async () => {
 		const boardsRawCollection = sessionStorage.getItem(BOARD_STORAGE_KEY);
@@ -112,21 +104,19 @@ export const sessionStorageBoardRepository: IBoardRepository = {
 	},
 };
 
-function parseData<D>(data: string) {
-	try {
-		return JSON.parse(data) as D;
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	} catch (error) {
-		return null;
-	}
-}
+const boardEntitySchema = z.object({
+	id: z.uuid(),
+	name: z.string(),
+});
+
+const boardEntityCollectionSchema = z.array(boardEntitySchema);
+type BoardEntityCollection = z.infer<typeof boardEntityCollectionSchema>;
 
 async function getBoardCollection() {
 	const boardsRawCollection = sessionStorage.getItem(BOARD_STORAGE_KEY);
 	if (!boardsRawCollection) return Result.Error<BoardModel[]>([]);
 
 	const persistedBoards = parseData<BoardEntityCollection>(boardsRawCollection);
-
 	if (!persistedBoards) return Result.Error<BoardModel[]>([]);
 
 	const boardsValidation =
@@ -152,4 +142,13 @@ async function getBoardCollection() {
 	}
 
 	return Result.Success(boardModelsMapped);
+}
+
+function parseData<D>(data: string) {
+	try {
+		return JSON.parse(data) as D;
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	} catch (error) {
+		return null;
+	}
 }

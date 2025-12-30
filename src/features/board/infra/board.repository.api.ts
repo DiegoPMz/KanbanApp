@@ -15,6 +15,16 @@ interface BoardSummary {
 	name: string;
 }
 
+interface CreateBoardRequest {
+	boards: {
+		name: string;
+		columns: {
+			name: string;
+			color: string;
+		}[];
+	}[];
+}
+
 export const apiBoardRepository: IBoardRepository = {
 	getSummaries: async () => {
 		try {
@@ -47,50 +57,57 @@ export const apiBoardRepository: IBoardRepository = {
 
 	findById: async (boardId: BoardModel["id"]): Promise<Result<BoardModel>> => {
 		try {
-			const response = await httpClient.get<BoardEntity>(`/boards/${boardId}`);
-			if (!response.data) return Result.Error([]);
-
-			const boardMappedResult = Board({
-				id: response.data.id,
-				name: response.data.name,
-				columns: response.data.columns,
-			});
-			return boardMappedResult;
-		} catch (error) {
-			console.error(error);
-			return Result.Error([]);
-		}
-	},
-
-	create: async (data: BoardModel) => {
-		try {
-			const response = await httpClient.post<BoardEntity>("/boards", data);
+			const res = await httpClient.get<BoardEntity>(`/boards/${boardId}`);
 			return Board({
-				id: response.data.id,
-				name: response.data.name,
-				columns: response.data.columns,
+				id: res.data.id,
+				name: res.data.name,
+				columns: res.data.columns,
 			});
-		} catch (error) {
-			console.error(error);
+		} catch {
 			return Result.Error([]);
 		}
 	},
 
-	update: async (data: BoardModel) => {
+	create: async (data: BoardModel): Promise<Result<BoardModel>> => {
+		const createBoardContent: CreateBoardRequest = {
+			boards: [
+				{
+					name: data.name,
+					columns: data.columns.map((c) => ({
+						name: c.name,
+						color: c.color,
+					})),
+				},
+			],
+		};
+
 		try {
-			const response = await httpClient.put<BoardEntity>("/boards", {
+			const res = await httpClient.post<BoardEntity>(
+				"/boards",
+				createBoardContent,
+			);
+			return Board({
+				id: res.data.id,
+				name: res.data.name,
+				columns: res.data.columns,
+			});
+		} catch {
+			return Result.Error([]);
+		}
+	},
+
+	update: async (data: BoardModel): Promise<Result<BoardModel>> => {
+		try {
+			const res = await httpClient.put<BoardEntity>("/boards", {
 				id: data.id,
 				name: data.name,
 			});
-			const mappedBoard = Board({
-				id: response.data.id,
-				name: response.data.name,
-				columns: data.columns,
+			return Board({
+				id: res.data.id,
+				name: res.data.name,
+				columns: res.data.columns,
 			});
-
-			return mappedBoard;
-		} catch (error) {
-			console.error(error);
+		} catch {
 			return Result.Error([]);
 		}
 	},
@@ -99,8 +116,7 @@ export const apiBoardRepository: IBoardRepository = {
 		try {
 			const response = await httpClient.delete<string>(`/boars/${data.id}`);
 			return response.data ? Result.Success(response.data) : Result.Error([]);
-		} catch (error) {
-			console.error(error);
+		} catch {
 			return Result.Error([]);
 		}
 	},
