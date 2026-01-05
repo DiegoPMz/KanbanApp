@@ -1,11 +1,13 @@
-import { DeleteBoardDto } from "@/features/board/application/board.delete.use-case";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import {
 	createColumn,
 	CreateColumnDto,
 } from "../application/column.create.use-case";
-import { deleteColumn } from "../application/column.delete.use-case";
+import {
+	deleteColumn,
+	DeleteColumnDto,
+} from "../application/column.delete.use-case";
 import { reorderColumn } from "../application/column.reorder.use-case";
 import {
 	updateColumn,
@@ -30,7 +32,7 @@ interface ColumnState {
 		reorderColumnHandler: (
 			data: ColumnStateModel,
 		) => Promise<ColumnModel | null>;
-		deleteColumnHandler: (data: DeleteBoardDto) => Promise<ColumnModel | null>;
+		deleteColumnHandler: (data: DeleteColumnDto) => Promise<ColumnModel | null>;
 	};
 }
 
@@ -83,7 +85,7 @@ export const useColumnStore = create<ColumnState>()(
 
 				return result.value.find((c) => c.id === data.id) ?? null;
 			},
-			deleteColumnHandler: async (data: DeleteBoardDto) => {
+			deleteColumnHandler: async (data: DeleteColumnDto) => {
 				const result = await deleteColumn(StateColumnRepository()).handle(data);
 				if (!result.isSuccess) {
 					return null;

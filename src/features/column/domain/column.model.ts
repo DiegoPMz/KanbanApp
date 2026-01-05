@@ -1,3 +1,4 @@
+import { TaskModel } from "@/features/task";
 import { Result } from "@/shared/lib/result";
 import {
 	columnBoardIdErrors,
@@ -51,5 +52,3 @@ export const Column = (data: ColumnInput): Result<ColumnModel> => {
 		tasks: data.tasks ?? [],
 	});
 };
-
-type TaskModel = { id: string };
