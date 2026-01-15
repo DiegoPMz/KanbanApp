@@ -1,136 +1,171 @@
+import { ColumnModel, loadPersistedColumns } from "@/features/column";
+import { SubTaskModel } from "@/features/subTask";
+import { loadPersistedTasks, TaskModel } from "@/features/task";
 import { Result } from "@/shared/lib/result";
+import { parseData } from "@/shared/lib/utils";
 import z from "zod";
+import { BoardFullDetailsModel } from "../domain/board.board-full-details.model";
+import { Board, BoardModel } from "../domain/board.model";
 import { IBoardRepository } from "../domain/board.repository";
-import { Board, BoardModel } from "./../domain/board.domain";
+import { boardRepositoryErrors } from "./../domain/board.errors";
 
-const BOARD_STORAGE_KEY = "DEMO_KANBAN_BOARD";
+const BOARD_STORAGE_KEY = "DEMO_KANBAN_BOARDS";
 
 export const sessionStorageBoardRepository: IBoardRepository = {
-	getSummaries: async () => {
-		const boardsRawCollection = sessionStorage.getItem(BOARD_STORAGE_KEY);
-		if (!boardsRawCollection) return Result.Error<BoardModel[]>([]);
+	// TODO: implement proper pagination
+	findPaginated: async (page: number, limit: number) => {
+		const currentBoards = await loadPersistedBoards();
+		if (!currentBoards.isSuccess) return Result.Error([]);
 
-		const persistedBoards =
-			parseData<BoardEntityCollection>(boardsRawCollection);
+		// ❌
+		return Result.Success([]);
+	},
 
-		if (!persistedBoards) return Result.Error<BoardModel[]>([]);
+	getBoardDetails: async (id: string) => {
+		const currentBoards = await loadPersistedBoards();
+		if (!currentBoards.isSuccess) return Result.Error(currentBoards.errors);
 
-		const boardModelsMapped: BoardModel[] = [];
+		const foundedBoard = currentBoards.value.find((b) => b.id === id);
+		if (!foundedBoard)
+			return Result.Error<BoardFullDetailsModel>([
+				boardRepositoryErrors.notFound(id),
+			]);
 
-		for (const boardSummary of persistedBoards) {
-			const boardModelResult = Board({
-				id: boardSummary.id,
-				name: boardSummary.name,
+		const currentColumns = await loadPersistedColumns();
+		const currentTask = await loadPersistedTasks();
+		// ❌
+		const currentSubTasks = {} as Result<SubTaskModel[]>;
+
+		if (
+			!currentColumns.isSuccess ||
+			!currentTask.isSuccess ||
+			!currentSubTasks.isSuccess
+		)
+			return Result.Success<BoardFullDetailsModel>({
 				columns: [],
+				subTasks: [],
+				tasks: [],
 			});
 
-			if (!boardModelResult.isSuccess) {
-				console.error(`invalid board`);
-				continue;
-			}
+		const columns: ColumnModel[] = currentColumns.value.filter(
+			(c) => c.boardId === id,
+		);
+		const tasks: TaskModel[] = [];
+		const subTasks: SubTaskModel[] = [];
 
-			boardModelsMapped.push(boardModelResult.value);
-		}
+		columns.forEach((col) => {
+			col.taskIds.forEach((taskId) => {
+				const taskFounded = currentTask.value.find(
+					(task) => task.id === taskId,
+				);
+				if (!taskFounded) return;
 
-		return Result.Success(boardModelsMapped);
+				tasks.push(taskFounded);
+				taskFounded.subtaskIds.forEach((subTaskId) => {
+					const subTaskFounded = currentSubTasks.value.find(
+						(subTask) => subTask.id === subTaskId,
+					);
+					if (!subTaskFounded) return;
+					subTasks.push(subTaskFounded);
+				});
+			});
+		});
+
+		return Result.Success<BoardFullDetailsModel>({ columns, tasks, subTasks });
 	},
 
 	findById: async (boardId: BoardModel["id"]): Promise<Result<BoardModel>> => {
-		const boardCollectionResult = await getBoardCollection();
-		if (!boardCollectionResult.isSuccess) return Result.Error<BoardModel>([]);
+		const currentBoards = await loadPersistedBoards();
+		if (!currentBoards.isSuccess) return Result.Error(currentBoards.errors);
 
-		const foundedBoard = boardCollectionResult.value.find(
-			(b) => b.id === boardId,
-		);
-		if (!foundedBoard) return Result.Error<BoardModel>([]);
-
-		return Result.Success(foundedBoard);
+		const foundedBoard = currentBoards.value.find((b) => b.id === boardId);
+		return foundedBoard
+			? Result.Success(foundedBoard)
+			: Result.Error<BoardModel>([boardRepositoryErrors.notFound(boardId)]);
 	},
 
 	create: async (data: BoardModel) => {
-		const boardCollectionResult = await getBoardCollection();
-		if (!boardCollectionResult.isSuccess) return Result.Error<BoardModel>([]);
-
-		const newBoard = Board({
-			id: data.id,
-			name: data.name,
-			columns: data.columns,
-		});
-
-		if (!newBoard.isSuccess) return Result.Error<BoardModel>([]);
+		const currentBoards = await loadPersistedBoards();
+		if (!currentBoards.isSuccess) return Result.Error(currentBoards.errors);
 
 		sessionStorage.setItem(
 			BOARD_STORAGE_KEY,
-			JSON.stringify([...boardCollectionResult.value, newBoard.value]),
+			JSON.stringify([...currentBoards.value, toBoardSessionStorage(data)]),
 		);
 
-		return Result.Success(newBoard.value);
+		return Result.Success(data);
 	},
 
 	update: async (data: BoardModel) => {
-		const boardCollectionResult = await getBoardCollection();
-		if (!boardCollectionResult.isSuccess) return Result.Error<BoardModel>([]);
+		const currentBoards = await loadPersistedBoards();
+		if (!currentBoards.isSuccess) return Result.Error(currentBoards.errors);
 
-		const collectionUpdated = boardCollectionResult.value.map((b) =>
+		const updatedBoards = currentBoards.value.map((b) =>
 			b.id === data.id ? { ...b, name: data.name } : b,
 		);
 
 		sessionStorage.setItem(
 			BOARD_STORAGE_KEY,
-			JSON.stringify(collectionUpdated),
+			JSON.stringify(updatedBoards.map((b) => toBoardSessionStorage(b))),
 		);
 
-		const boardUpdated = boardCollectionResult.value.find(
-			(b) => b.id === data.id,
-		);
-
-		return !boardUpdated ? Result.Error([]) : Result.Success(boardUpdated);
+		const updatedBoard = updatedBoards.find((b) => b.id === data.id);
+		return !updatedBoard
+			? Result.Error([boardRepositoryErrors.notFound(data.id)])
+			: Result.Success(updatedBoard);
 	},
 
 	delete: async (data: BoardModel) => {
-		const boardCollectionResult = await getBoardCollection();
-		if (!boardCollectionResult.isSuccess) return Result.Error<string>([]);
+		const currentBoards = await loadPersistedBoards();
+		if (!currentBoards.isSuccess) return Result.Error(currentBoards.errors);
 
-		const collectionUpdated = boardCollectionResult.value.filter(
-			(b) => b.id !== data.id,
-		);
+		const updatedBoards = currentBoards.value.filter((b) => b.id !== data.id);
 
 		sessionStorage.setItem(
 			BOARD_STORAGE_KEY,
-			JSON.stringify(collectionUpdated),
+			JSON.stringify(updatedBoards.map((b) => toBoardSessionStorage(b))),
 		);
 
 		return Result.Success("Board deleted successfully");
 	},
 };
 
-const boardEntitySchema = z.object({
+const boardSessionStorageSchema = z.object({
 	id: z.uuid(),
 	name: z.string(),
+	columnIds: z.array(z.string()),
 });
 
-const boardEntityCollectionSchema = z.array(boardEntitySchema);
-type BoardEntityCollection = z.infer<typeof boardEntityCollectionSchema>;
+type BoardSessionStorage = z.infer<typeof boardSessionStorageSchema>;
+const boardListSessionStorageSchema = z.array(boardSessionStorageSchema);
 
-async function getBoardCollection() {
-	const boardsRawCollection = sessionStorage.getItem(BOARD_STORAGE_KEY);
-	if (!boardsRawCollection) return Result.Error<BoardModel[]>([]);
-
-	const persistedBoards = parseData<BoardEntityCollection>(boardsRawCollection);
-	if (!persistedBoards) return Result.Error<BoardModel[]>([]);
+export const loadPersistedBoards = async (): Promise<Result<BoardModel[]>> => {
+	const persistedBoards = parseData<BoardSessionStorage[]>(
+		sessionStorage.getItem(BOARD_STORAGE_KEY) as string,
+	);
+	if (!persistedBoards)
+		return Result.Error([
+			boardRepositoryErrors.dataNotFound(BOARD_STORAGE_KEY, "SESSION"),
+		]);
 
 	const boardsValidation =
-		await boardEntityCollectionSchema.safeParseAsync(persistedBoards);
+		await boardListSessionStorageSchema.safeParseAsync(persistedBoards);
 
-	if (!boardsValidation.success) return Result.Error<BoardModel[]>([]);
+	if (!boardsValidation.success)
+		return Result.Error([
+			boardRepositoryErrors.corruptedData(
+				BOARD_STORAGE_KEY,
+				"The data not match the expected format.",
+			),
+		]);
 
-	const boardModelsMapped: BoardModel[] = [];
+	const toBoardModels: BoardModel[] = [];
 
-	for (const boardSummary of boardsValidation.data) {
+	for (const boardSessionStorage of boardsValidation.data) {
 		const boardModelResult = Board({
-			id: boardSummary.id,
-			name: boardSummary.name,
-			columns: [],
+			id: boardSessionStorage.id,
+			name: boardSessionStorage.name,
+			columnIds: boardSessionStorage.columnIds,
 		});
 
 		if (!boardModelResult.isSuccess) {
@@ -138,17 +173,14 @@ async function getBoardCollection() {
 			continue;
 		}
 
-		boardModelsMapped.push(boardModelResult.value);
+		toBoardModels.push(boardModelResult.value);
 	}
 
-	return Result.Success(boardModelsMapped);
-}
+	return Result.Success(toBoardModels);
+};
 
-function parseData<D>(data: string) {
-	try {
-		return JSON.parse(data) as D;
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	} catch (error) {
-		return null;
-	}
-}
+const toBoardSessionStorage = (model: BoardModel): BoardSessionStorage => ({
+	id: model.id,
+	name: model.name,
+	columnIds: model.columnIds,
+});

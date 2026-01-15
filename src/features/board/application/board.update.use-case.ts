@@ -1,5 +1,5 @@
 import { Result } from "@/shared/lib/result";
-import { BoardModel } from "../domain/board.domain";
+import { Board, BoardModel } from "../domain/board.model";
 import { IBoardRepository } from "./../domain/board.repository";
 
 export interface UpdateBoardDto {
@@ -10,16 +10,19 @@ export interface UpdateBoardDto {
 export const updateBoard = (boardRepository: IBoardRepository) => {
 	return {
 		handle: async (data: UpdateBoardDto): Promise<Result<BoardModel>> => {
-			if (!data.name) return Result.Error([]);
+			const boardFoundedResult = await boardRepository.findById(data.id);
+			if (!boardFoundedResult.isSuccess)
+				return Result.Error(boardFoundedResult.errors);
 
-			const boardToUpdateResult = await boardRepository.findById(data.id);
-			if (!boardToUpdateResult.isSuccess)
-				return Result.Error([...boardToUpdateResult.errors]);
-
-			return boardRepository.update({
-				...boardToUpdateResult.value,
+			const boardUpdatedResult = Board({
+				id: boardFoundedResult.value.id,
+				columnIds: boardFoundedResult.value.columnIds,
 				name: data.name,
 			});
+
+			return boardUpdatedResult.isSuccess
+				? boardRepository.update(boardUpdatedResult.value)
+				: Result.Error(boardUpdatedResult.errors);
 		},
 	};
 };

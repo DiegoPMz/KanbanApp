@@ -1,23 +1,23 @@
 import { Result } from "@/shared/lib/result";
-import { Board, BoardModel } from "../domain/board.domain";
+import { Board, BoardModel } from "../domain/board.model";
 import { IBoardRepository } from "../domain/board.repository";
 import { useBoardStore } from "../store/board.store";
 import { apiBoardRepository } from "./board.repository.api";
 
-export const boardStateRepository = (
+export const stateBoardRepository = (
 	baseBoardRepository = apiBoardRepository,
 ): IBoardRepository => ({
 	...baseBoardRepository,
 	findById: async (boardId: BoardModel["id"]): Promise<Result<BoardModel>> => {
-		const boardInState = useBoardStore
+		const foundedBoardState = useBoardStore
 			.getState()
 			.boards.find((b) => b.id === boardId);
 
-		if (boardInState)
+		if (foundedBoardState)
 			return Board({
-				id: boardInState.id,
-				name: boardInState.name,
-				columns: [],
+				id: foundedBoardState.id,
+				name: foundedBoardState.name,
+				columnIds: foundedBoardState.columnIds,
 			});
 
 		return baseBoardRepository.findById(boardId);

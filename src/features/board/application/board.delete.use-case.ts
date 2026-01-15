@@ -1,5 +1,5 @@
 import { Result } from "@/shared/lib/result";
-import { BoardModel } from "../domain/board.domain";
+import { BoardModel } from "../domain/board.model";
 import { IBoardRepository } from "./../domain/board.repository";
 
 export interface DeleteBoardDto {
@@ -9,17 +9,18 @@ export interface DeleteBoardDto {
 export const deleteBoard = (boardRepository: IBoardRepository) => {
 	return {
 		handle: async (data: DeleteBoardDto): Promise<Result<BoardModel>> => {
-			const boardToDeleteResult = await boardRepository.findById(data.id);
+			const boardFoundedResult = await boardRepository.findById(data.id);
 
-			if (!boardToDeleteResult.isSuccess)
-				return Result.Error(boardToDeleteResult.errors);
+			if (!boardFoundedResult.isSuccess)
+				return Result.Error(boardFoundedResult.errors);
 
-			const deleteResult = await boardRepository.delete({
-				...boardToDeleteResult.value,
+			const boardDeletedResult = await boardRepository.delete({
+				...boardFoundedResult.value,
 			});
 
-			if (!deleteResult.isSuccess) return Result.Error(deleteResult.errors);
-			return boardToDeleteResult;
+			return boardDeletedResult.isSuccess
+				? boardFoundedResult
+				: Result.Error(boardDeletedResult.errors);
 		},
 	};
 };
