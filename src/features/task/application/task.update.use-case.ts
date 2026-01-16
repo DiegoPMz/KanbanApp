@@ -1,4 +1,5 @@
-import { Task } from "../domain/task.model";
+import { Result } from "@/shared/lib/result";
+import { Task, TaskModel, TaskPriorities } from "../domain/task.model";
 import { ITaskRepository } from "../domain/task.repository";
 
 export interface UpdateTaskDto {
@@ -6,12 +7,12 @@ export interface UpdateTaskDto {
 	title?: string;
 	description?: string;
 	isCompleted?: boolean;
-	priority?: string;
+	priority?: TaskPriorities;
 }
 
 export const updateTask = (taskRepository: ITaskRepository) => {
 	return {
-		handle: async (data: UpdateTaskDto) => {
+		handle: async (data: UpdateTaskDto): Promise<Result<TaskModel>> => {
 			const taskFoundedResult = await taskRepository.findById(data.id);
 			if (!taskFoundedResult.isSuccess) return taskFoundedResult;
 
@@ -26,8 +27,9 @@ export const updateTask = (taskRepository: ITaskRepository) => {
 				priority: data.priority ?? taskFoundedResult.value.priority,
 			});
 
-			if (!taskUpdatedResult.isSuccess) return taskUpdatedResult;
-			return taskRepository.update(taskUpdatedResult.value);
+			return taskUpdatedResult.isSuccess
+				? taskRepository.update(taskUpdatedResult.value)
+				: taskUpdatedResult;
 		},
 	};
 };

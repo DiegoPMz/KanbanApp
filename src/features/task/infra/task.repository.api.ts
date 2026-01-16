@@ -1,21 +1,26 @@
 import { httpClient } from "@/shared/api/api.client";
-import { Result } from "@/shared/lib/result";
-import { AxiosResponse } from "axios";
+import { ProblemDetails } from "@/shared/api/http-error.interceptor";
+import { AppError, Result } from "@/shared/lib/result";
+import { AxiosError, AxiosResponse, HttpStatusCode } from "axios";
+import {
+	taskPersistenceErrors,
+	taskValidationError,
+} from "../domain/task.errors";
 import { Task, TaskModel } from "../domain/task.model";
 import { ITaskRepository } from "../domain/task.repository";
 
-interface TaskEntity {
+interface TaskApiDto {
 	columnId: string;
 	id: string;
 	title: string;
 	description: string;
 	isCompleted: boolean;
 	position: number;
-	priority: string;
-	subtasks: [];
+	priority: "low" | "medium" | "high";
 }
 
-type CreateTaskRequest = Omit<TaskEntity, "id" | "subtasks">;
+type CreateTaskRequest = Omit<TaskApiDto, "id">;
+
 interface UpdateTaskRequest {
 	id: string;
 	title?: string;
@@ -34,10 +39,22 @@ interface ReorderBody {
 export const apiTaskRepository: ITaskRepository = {
 	findById: async (taskId: TaskModel["id"]): Promise<Result<TaskModel>> => {
 		try {
-			const res = await httpClient.get<TaskEntity>(`/boardTasks/${taskId}`);
+			const res = await httpClient.get<TaskApiDto>(`/boardTasks/${taskId}`);
 			return toTask(res.data);
-		} catch {
-			return Result.Error([]);
+		} catch (error) {
+			if (error instanceof AxiosError) {
+				const response = error.response?.data as ProblemDetails;
+
+				if (response.status === HttpStatusCode.NotFound)
+					return Result.Error([taskPersistenceErrors.notFound(taskId)]);
+
+				if (response.status === HttpStatusCode.BadRequest)
+					return Result.Error([taskValidationError.invalidId(taskId)]);
+			}
+
+			return Result.Error([
+				taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
+			]);
 		}
 	},
 
@@ -52,20 +69,47 @@ export const apiTaskRepository: ITaskRepository = {
 		};
 
 		try {
-			const res = await httpClient.post<TaskEntity>("/boardTasks", createTask);
+			const res = await httpClient.post<TaskApiDto>("/boardTasks", createTask);
 			return toTask(res.data);
-		} catch {
-			return Result.Error([]);
+		} catch (error) {
+			if (!(error instanceof AxiosError))
+				return Result.Error([
+					taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
+				]);
+
+			const response = error.response?.data as ProblemDetails;
+
+			if (response.status === HttpStatusCode.BadRequest) {
+				const badRequestErrors: AppError[] = [];
+
+				if (response.errors?.title)
+					badRequestErrors.push(taskValidationError.tooLongTitle("UNDEFINED"));
+				if (response.errors?.priority)
+					badRequestErrors.push(
+						taskValidationError.invalidPriority("UNDEFINED", data.priority),
+					);
+				if (response.errors?.position) {
+					badRequestErrors.push(
+						taskValidationError.invalidPosition("UNDEFINED", data.position),
+					);
+				}
+
+				if (badRequestErrors.length > 0) return Result.Error(badRequestErrors);
+			}
+
+			return Result.Error([
+				taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
+			]);
 		}
 	},
 
 	update: async (data: TaskModel): Promise<Result<TaskModel>> => {
 		try {
 			const res = await httpClient.put<
-				TaskEntity,
-				AxiosResponse<TaskEntity>,
+				TaskApiDto,
+				AxiosResponse<TaskApiDto>,
 				UpdateTaskRequest
-			>("/boardTasks", {
+			>(`/boardTasks/${data.id}`, {
 				columnId: data.columnId,
 				id: data.id,
 				title: data.title,
@@ -75,8 +119,33 @@ export const apiTaskRepository: ITaskRepository = {
 			});
 
 			return toTask(res.data);
-		} catch {
-			return Result.Error([]);
+		} catch (error) {
+			if (!(error instanceof AxiosError))
+				return Result.Error([
+					taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
+				]);
+
+			const response = error.response?.data as ProblemDetails;
+
+			if (response.status === HttpStatusCode.NotFound)
+				return Result.Error([taskPersistenceErrors.notFound(data.id)]);
+
+			if (response.status === HttpStatusCode.BadRequest) {
+				const badRequestErrors: AppError[] = [];
+
+				if (response.errors?.title)
+					badRequestErrors.push(taskValidationError.tooLongTitle("UNDEFINED"));
+				if (response.errors?.priority)
+					badRequestErrors.push(
+						taskValidationError.invalidPriority("UNDEFINED", data.priority),
+					);
+
+				if (badRequestErrors.length > 0) return Result.Error(badRequestErrors);
+			}
+
+			return Result.Error([
+				taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
+			]);
 		}
 	},
 
@@ -84,8 +153,20 @@ export const apiTaskRepository: ITaskRepository = {
 		try {
 			const res = await httpClient.delete<string>(`/boardTasks/${data.id}`);
 			return res.data ? Result.Success(res.data) : Result.Error([]);
-		} catch {
-			return Result.Error([]);
+		} catch (error) {
+			if (error instanceof AxiosError) {
+				const response = error.response?.data as ProblemDetails;
+
+				if (response.status === HttpStatusCode.NotFound)
+					return Result.Error([taskPersistenceErrors.notFound(data.id)]);
+
+				if (response.status === HttpStatusCode.BadRequest)
+					return Result.Error([taskValidationError.invalidId(data.id)]);
+			}
+
+			return Result.Error([
+				taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
+			]);
 		}
 	},
 
@@ -101,13 +182,38 @@ export const apiTaskRepository: ITaskRepository = {
 				position: data.position,
 			});
 			return res.data ? Result.Success(res.data) : Result.Error([]);
-		} catch {
-			return Result.Error([]);
+		} catch (error) {
+			if (!(error instanceof AxiosError))
+				return Result.Error([
+					taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
+				]);
+
+			const response = error.response?.data as ProblemDetails;
+
+			if (response.status === HttpStatusCode.NotFound)
+				return Result.Error([taskPersistenceErrors.notFound(data.id)]);
+
+			if (response.status === HttpStatusCode.BadRequest) {
+				const badRequestErrors: AppError[] = [];
+
+				if (response.errors?.id)
+					badRequestErrors.push(taskValidationError.invalidId(data.id));
+				if (response.errors?.position)
+					badRequestErrors.push(
+						taskValidationError.negativePosition(data.id, data.position),
+					);
+
+				if (badRequestErrors.length > 0) return Result.Error(badRequestErrors);
+			}
+
+			return Result.Error([
+				taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
+			]);
 		}
 	},
 };
 
-const toTask = (model: TaskEntity) =>
+const toTask = (model: TaskApiDto) =>
 	Task({
 		columnId: model.columnId,
 		id: model.id,
@@ -116,5 +222,5 @@ const toTask = (model: TaskEntity) =>
 		isCompleted: model.isCompleted,
 		position: model.position,
 		priority: model.priority,
-		subtasks: model.subtasks,
+		subtaskIds: [],
 	});

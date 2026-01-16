@@ -19,13 +19,9 @@ export const reorderTask = (taskRepository: ITaskRepository) => {
 				position: data.position,
 			});
 
-			if (!taskReorderedResult.isSuccess)
-				return Result.Error(taskReorderedResult.errors);
-
-			const tasksReorderedResult = taskRepository.reorder(
-				taskReorderedResult.value,
-			);
-			return tasksReorderedResult;
+			return taskReorderedResult.isSuccess
+				? taskRepository.reorder(taskReorderedResult.value)
+				: Result.Error(taskReorderedResult.errors);
 		},
 	};
 };

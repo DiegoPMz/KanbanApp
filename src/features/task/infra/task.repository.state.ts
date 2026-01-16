@@ -9,20 +9,20 @@ export const StateTaskRepository = (
 ): ITaskRepository => ({
 	...baseTaskRepository,
 	findById: async (taskId: TaskModel["id"]): Promise<Result<TaskModel>> => {
-		const columnInState = useTaskStore
+		const taskInState = useTaskStore
 			.getState()
 			.tasks.find((t) => t.id === taskId);
 
-		if (columnInState)
+		if (taskInState)
 			return Task({
-				columnId: columnInState.columnId,
-				id: columnInState.id,
-				title: columnInState.title,
-				description: columnInState.description,
-				isCompleted: columnInState.isCompleted,
-				position: columnInState.position,
-				priority: columnInState.priority,
-				subtasks: [],
+				columnId: taskInState?.columnId,
+				id: taskInState.id,
+				title: taskInState.title,
+				description: taskInState.description,
+				isCompleted: taskInState.isCompleted,
+				position: taskInState.position,
+				priority: taskInState.priority,
+				subtaskIds: taskInState.subtaskIds,
 			});
 
 		return baseTaskRepository.findById(taskId);

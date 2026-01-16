@@ -8,7 +8,7 @@ export interface DeleteTaskDto {
 
 export const deleteTask = (taskRepository: ITaskRepository) => {
 	return {
-		handle: async (data: DeleteTaskDto) => {
+		handle: async (data: DeleteTaskDto): Promise<Result<TaskModel>> => {
 			const taskFoundedResult = await taskRepository.findById(data.id);
 			if (!taskFoundedResult.isSuccess) return taskFoundedResult;
 
@@ -18,7 +18,7 @@ export const deleteTask = (taskRepository: ITaskRepository) => {
 
 			return taskDeletedResult.isSuccess
 				? taskFoundedResult
-				: Result.Error<TaskModel>(taskDeletedResult.errors);
+				: Result.Error(taskDeletedResult.errors);
 		},
 	};
 };

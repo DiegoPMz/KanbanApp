@@ -1,4 +1,5 @@
-import { Task } from "../domain/task.model";
+import { Result } from "@/shared/lib/result";
+import { Task, TaskModel, TaskPriorities } from "../domain/task.model";
 import { ITaskRepository } from "../domain/task.repository";
 
 export interface CreateTaskDto {
@@ -7,12 +8,12 @@ export interface CreateTaskDto {
 	description: string;
 	isCompleted: boolean;
 	position: number;
-	priority: string;
+	priority: TaskPriorities;
 }
 
 export const createTask = (taskRepository: ITaskRepository) => {
 	return {
-		handle: async (data: CreateTaskDto) => {
+		handle: async (data: CreateTaskDto): Promise<Result<TaskModel>> => {
 			const taskCreatedResult = Task({
 				columnId: data.columnId,
 				title: data.title,
@@ -20,17 +21,12 @@ export const createTask = (taskRepository: ITaskRepository) => {
 				isCompleted: data.isCompleted,
 				position: data.position,
 				priority: data.priority,
-				subtasks: [],
+				subtaskIds: [],
 			});
 
-			if (!taskCreatedResult.isSuccess) return taskCreatedResult;
-
-			const taskSavedResult = await taskRepository.create(
-				taskCreatedResult.value,
-			);
-			if (!taskSavedResult.isSuccess) return taskSavedResult;
-
-			return taskSavedResult;
+			return taskCreatedResult.isSuccess
+				? taskRepository.create(taskCreatedResult.value)
+				: taskCreatedResult;
 		},
 	};
 };
