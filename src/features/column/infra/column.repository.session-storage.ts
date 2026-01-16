@@ -1,8 +1,14 @@
+import { boardRepositoryErrors } from "@/features/board";
+import { reorderAndResequence } from "@/shared/lib/reorder";
 import { Result } from "@/shared/lib/result";
 import { parseData } from "@/shared/lib/utils";
 import z from "zod";
 import { Column, ColumnModel } from "../domain/column.model";
 import { IColumnRepository } from "../domain/column.repository";
+import {
+	columnPersistenceErrors,
+	columnValidationErrors,
+} from "./../domain/column.errors";
 
 const COLUMNS_STORAGE_KEY = "DEMO_KANBAN_COLUMNS";
 
@@ -11,17 +17,19 @@ export const sessionStorageColumnRepository: IColumnRepository = {
 		columnId: ColumnModel["id"],
 	): Promise<Result<ColumnModel>> => {
 		const currentColumns = await loadPersistedColumns();
-		if (!currentColumns.isSuccess) return Result.Error([]);
+		if (!currentColumns.isSuccess) return Result.Error(currentColumns.errors);
 
 		const foundedColumn = currentColumns.value.find((c) => c.id === columnId);
-		return !foundedColumn ? Result.Error([]) : Result.Success(foundedColumn);
+		return !foundedColumn
+			? Result.Error([columnPersistenceErrors.notFound(columnId)])
+			: Result.Success(foundedColumn);
 	},
 
 	create: async (data: ColumnModel) => {
 		const currentColumns = await loadPersistedColumns();
-		if (!currentColumns.isSuccess) return Result.Error([]);
+		if (!currentColumns.isSuccess) return Result.Error(currentColumns.errors);
 
-		const entitiesToPersist = toColumnEntities([...currentColumns.value, data]);
+		const entitiesToPersist = toColumnStorage([...currentColumns.value, data]);
 		sessionStorage.setItem(
 			COLUMNS_STORAGE_KEY,
 			JSON.stringify(entitiesToPersist),
@@ -32,7 +40,7 @@ export const sessionStorageColumnRepository: IColumnRepository = {
 
 	update: async (data: ColumnModel) => {
 		const currentColumns = await loadPersistedColumns();
-		if (!currentColumns.isSuccess) return Result.Error([]);
+		if (!currentColumns.isSuccess) return Result.Error(currentColumns.errors);
 
 		const updatedColumns = currentColumns.value.map((c) =>
 			c.id === data.id && c.boardId === data.boardId
@@ -40,71 +48,62 @@ export const sessionStorageColumnRepository: IColumnRepository = {
 				: c,
 		);
 
-		const entitiesToPersist = toColumnEntities(updatedColumns);
+		const entitiesToPersist = toColumnStorage(updatedColumns);
 		sessionStorage.setItem(
 			COLUMNS_STORAGE_KEY,
 			JSON.stringify(entitiesToPersist),
 		);
 		const updatedColumn = updatedColumns.find((c) => c.id === data.id);
 
-		return !updatedColumn ? Result.Error([]) : Result.Success(updatedColumn);
+		return !updatedColumn
+			? Result.Error([columnPersistenceErrors.notFound(data.id)])
+			: Result.Success(updatedColumn);
 	},
 
 	delete: async (data: ColumnModel) => {
 		const currentColumns = await loadPersistedColumns();
-		if (!currentColumns.isSuccess) return Result.Error([]);
+		if (!currentColumns.isSuccess) return Result.Error(currentColumns.errors);
+
+		if (!currentColumns.value.find((c) => c.id === data.id))
+			return Result.Error([columnPersistenceErrors.notFound(data.id)]);
 
 		const updatedColumns = currentColumns.value.filter((b) => b.id !== data.id);
 
-		const entitiesToPersist = toColumnEntities(updatedColumns);
+		const entitiesToPersist = toColumnStorage(updatedColumns);
 		sessionStorage.setItem(
 			COLUMNS_STORAGE_KEY,
 			JSON.stringify(entitiesToPersist),
 		);
 
-		return Result.Success("Board deleted successfully");
+		return Result.Success("Column deleted successfully");
 	},
 
 	reorder: async (data: ColumnModel) => {
 		const currentColumns = await loadPersistedColumns();
-		if (!currentColumns.isSuccess) return Result.Error([]);
+		if (!currentColumns.isSuccess) return Result.Error(currentColumns.errors);
 
 		const columnsByBoardId = currentColumns.value.filter(
 			(c) => c.boardId === data.boardId,
 		);
+
 		const columnFounded = columnsByBoardId.find((c) => c.id === data.id);
-		if (!columnFounded) return Result.Error([]);
+		if (!columnFounded)
+			return Result.Error([columnPersistenceErrors.notFound(data.id)]);
 
-		if (data.position > columnsByBoardId.length) return Result.Error([]);
+		if (data.position > columnsByBoardId.length)
+			return Result.Error([
+				columnValidationErrors.positionTooHigh(data.id, data.position),
+			]);
 
-		columnsByBoardId.sort((a, b) => a.position - b.position);
-
-		if (columnFounded.position == data.position)
+		if (columnFounded.position === data.position)
 			return Result.Success(columnsByBoardId);
 
-		const reorderedColumns: ColumnModel[] = [];
-		let index = 1;
+		const reorderedColumns = reorderAndResequence(
+			columnsByBoardId,
+			columnFounded,
+		);
 
-		for (const c of columnsByBoardId.filter((c) => c.id !== data.id)) {
-			if (index == data.position) {
-				reorderedColumns.push({ ...columnFounded, position: data.position });
-				index++;
-			}
-
-			reorderedColumns.push({ ...c, position: index });
-			index++;
-		}
-
-		if (!reorderedColumns.some((c) => c.id === data.id)) {
-			reorderedColumns.push({ ...columnFounded, position: index });
-		}
-
-		const updatedColumns = [
-			...currentColumns.value.filter((c) => c.boardId !== data.boardId),
-			...reorderedColumns,
-		];
-
-		const entitiesToPersist = toColumnEntities(updatedColumns);
+		const entitiesToPersist = toColumnStorage(reorderedColumns);
 		sessionStorage.setItem(
 			COLUMNS_STORAGE_KEY,
 			JSON.stringify(entitiesToPersist),
@@ -114,28 +113,38 @@ export const sessionStorageColumnRepository: IColumnRepository = {
 	},
 };
 
-const columnEntitySchema = z.object({
+const columnSessionStorageSchema = z.object({
 	id: z.uuid(),
 	name: z.string(),
 	color: z.string(),
 	position: z.number(),
 	boardId: z.uuid(),
+	taskIds: z.array(z.string()),
 });
 
-const columnEntityCollectionSchema = z.array(columnEntitySchema);
-type ColumnEntity = z.infer<typeof columnEntitySchema>;
-type ColumnEntityCollection = z.infer<typeof columnEntityCollectionSchema>;
+const columnListSessionStorageSchema = z.array(columnSessionStorageSchema);
+type ColumnSessionStorage = z.infer<typeof columnSessionStorageSchema>;
 
-const loadPersistedColumns = async (): Promise<Result<ColumnModel[]>> => {
-	const rawData = sessionStorage.getItem(COLUMNS_STORAGE_KEY);
-	if (!rawData) return Result.Error([]);
-
-	const persistedData = parseData<ColumnEntityCollection>(rawData);
-	if (!persistedData) return Result.Error([]);
+export const loadPersistedColumns = async (): Promise<
+	Result<ColumnModel[]>
+> => {
+	const persistedData = parseData<ColumnSessionStorage[]>(
+		sessionStorage.getItem(COLUMNS_STORAGE_KEY) as string,
+	);
+	if (!persistedData)
+		return Result.Error([
+			boardRepositoryErrors.dataNotFound(COLUMNS_STORAGE_KEY, "SESSION"),
+		]);
 
 	const validation =
-		await columnEntityCollectionSchema.safeParseAsync(persistedData);
-	if (!validation.success) return Result.Error([]);
+		await columnListSessionStorageSchema.safeParseAsync(persistedData);
+	if (!validation.success)
+		return Result.Error([
+			boardRepositoryErrors.corruptedData(
+				COLUMNS_STORAGE_KEY,
+				"The column data does not match the expected format.",
+			),
+		]);
 
 	const toColumns: ColumnModel[] = [];
 
@@ -145,7 +154,7 @@ const loadPersistedColumns = async (): Promise<Result<ColumnModel[]>> => {
 			name: data.name,
 			position: data.position,
 			boardId: data.boardId,
-			tasks: [],
+			taskIds: data.taskIds,
 		});
 
 		if (!columnResult.isSuccess) {
@@ -158,11 +167,12 @@ const loadPersistedColumns = async (): Promise<Result<ColumnModel[]>> => {
 	return Result.Success(toColumns);
 };
 
-const toColumnEntities = (columns: ColumnModel[]): ColumnEntity[] =>
+const toColumnStorage = (columns: ColumnModel[]): ColumnSessionStorage[] =>
 	columns.map((c: ColumnModel) => ({
 		id: c.id,
 		name: c.name,
 		color: c.color,
 		position: c.position,
 		boardId: c.boardId,
+		taskIds: c.taskIds,
 	}));

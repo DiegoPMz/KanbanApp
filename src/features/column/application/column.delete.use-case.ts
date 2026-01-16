@@ -8,7 +8,7 @@ export interface DeleteColumnDto {
 
 export const deleteColumn = (columnRepository: IColumnRepository) => {
 	return {
-		handle: async (data: DeleteColumnDto) => {
+		handle: async (data: DeleteColumnDto): Promise<Result<ColumnModel>> => {
 			const columnFoundedResult = await columnRepository.findById(data.id);
 			if (!columnFoundedResult.isSuccess) return columnFoundedResult;
 

@@ -1,4 +1,5 @@
-import { Column } from "../domain/column.model";
+import { Result } from "@/shared/lib/result";
+import { Column, ColumnModel } from "../domain/column.model";
 import { IColumnRepository } from "../domain/column.repository";
 
 export interface UpdateColumnDto {
@@ -9,7 +10,7 @@ export interface UpdateColumnDto {
 
 export const updateColumn = (columnRepository: IColumnRepository) => {
 	return {
-		handle: async (data: UpdateColumnDto) => {
+		handle: async (data: UpdateColumnDto): Promise<Result<ColumnModel>> => {
 			const columnFoundedResult = await columnRepository.findById(data.id);
 			if (!columnFoundedResult.isSuccess) return columnFoundedResult;
 
@@ -19,12 +20,9 @@ export const updateColumn = (columnRepository: IColumnRepository) => {
 				color: data.color ?? columnFoundedResult.value.color,
 			});
 
-			if (!columnUpdatedResult.isSuccess) return columnUpdatedResult;
-
-			const columnSavedResult = columnRepository.update(
-				columnUpdatedResult.value,
-			);
-			return columnSavedResult;
+			return columnUpdatedResult.isSuccess
+				? columnRepository.update(columnUpdatedResult.value)
+				: Result.Error(columnUpdatedResult.errors);
 		},
 	};
 };

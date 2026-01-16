@@ -1,10 +1,5 @@
-import { TaskModel } from "@/features/task";
 import { Result } from "@/shared/lib/result";
-import {
-	columnBoardIdErrors,
-	columnNameErrors,
-	columnPositionErrors,
-} from "./column.errors";
+import { columnValidationErrors } from "./column.errors";
 
 export interface ColumnModel {
 	id: string;
@@ -12,7 +7,7 @@ export interface ColumnModel {
 	color: string;
 	position: number;
 	boardId: string;
-	tasks: TaskModel[];
+	taskIds: string[];
 }
 
 type ColumnInput = Omit<ColumnModel, "id" | "color"> & {
@@ -23,25 +18,50 @@ type ColumnInput = Omit<ColumnModel, "id" | "color"> & {
 export const Column = (data: ColumnInput): Result<ColumnModel> => {
 	if (!data.boardId)
 		return Result.Error([
-			{
-				code: columnBoardIdErrors.code,
-				message: columnBoardIdErrors.messages.empty,
-			},
+			columnValidationErrors.invalidBoardId(
+				data.id ?? "undefined",
+				data.boardId,
+			),
 		]);
 
 	if (!data.name)
 		return Result.Error([
-			{ code: columnNameErrors.code, message: columnNameErrors.messages.empty },
+			columnValidationErrors.emptyName(data.id ?? "undefined"),
 		]);
 
-	if (data.position < 0) {
+	if (data.name.length > 100)
 		return Result.Error([
-			{
-				code: columnPositionErrors.code,
-				message: columnPositionErrors.messages.negative,
-			},
+			columnValidationErrors.tooLongName(data.id ?? "undefined"),
 		]);
-	}
+
+	if (isNaN(data.position))
+		return Result.Error([
+			columnValidationErrors.invalidPosition(
+				data.id ?? "undefined",
+				data.position,
+			),
+		]);
+
+	if (data.position < 0)
+		return Result.Error([
+			columnValidationErrors.negativePosition(
+				data.id ?? "undefined",
+				data.position,
+			),
+		]);
+
+	if (
+		data.color &&
+		!RegExp(/^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/).test(data.color)
+	)
+		return Result.Error([
+			columnValidationErrors.invalidColor(data.id ?? "undefined", data.color),
+		]);
+
+	if (!data.taskIds)
+		return Result.Error([
+			columnValidationErrors.invalidTaskIds(data.id ?? "undefined"),
+		]);
 
 	return Result.Success({
 		id: data.id ?? crypto.randomUUID(),
@@ -49,6 +69,6 @@ export const Column = (data: ColumnInput): Result<ColumnModel> => {
 		color: data.color ?? "#241890",
 		position: data.position ?? 0,
 		boardId: data.boardId,
-		tasks: data.tasks ?? [],
+		taskIds: data.taskIds,
 	});
 };

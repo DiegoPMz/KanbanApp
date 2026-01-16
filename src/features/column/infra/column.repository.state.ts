@@ -21,7 +21,7 @@ export const StateColumnRepository = (
 				name: columnInState.name,
 				boardId: columnInState.boardId,
 				position: columnInState.position,
-				tasks: [],
+				taskIds: columnInState.taskIds,
 			});
 
 		return baseColumnRepository.findById(columnId);

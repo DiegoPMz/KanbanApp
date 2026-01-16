@@ -19,13 +19,9 @@ export const reorderColumn = (columnRepository: IColumnRepository) => {
 				position: data.position,
 			});
 
-			if (!columnReorderedResult.isSuccess)
-				return Result.Error(columnReorderedResult.errors);
-
-			const columnsReorderedResult = columnRepository.reorder(
-				columnReorderedResult.value,
-			);
-			return columnsReorderedResult;
+			return columnReorderedResult.isSuccess
+				? columnRepository.reorder(columnReorderedResult.value)
+				: Result.Error(columnReorderedResult.errors);
 		},
 	};
 };

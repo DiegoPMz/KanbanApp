@@ -1,4 +1,5 @@
-import { Column } from "../domain/column.model";
+import { Result } from "@/shared/lib/result";
+import { Column, ColumnModel } from "../domain/column.model";
 import { IColumnRepository } from "../domain/column.repository";
 
 export interface CreateColumnDto {
@@ -10,23 +11,18 @@ export interface CreateColumnDto {
 
 export const createColumn = (columnRepository: IColumnRepository) => {
 	return {
-		handle: async (data: CreateColumnDto) => {
+		handle: async (data: CreateColumnDto): Promise<Result<ColumnModel>> => {
 			const columnCreatedResult = Column({
 				name: data.name,
 				position: data.position,
 				boardId: data.boardId,
 				color: data.color,
-				tasks: [],
+				taskIds: [],
 			});
 
-			if (!columnCreatedResult.isSuccess) return columnCreatedResult;
-
-			const columnSavedResult = await columnRepository.create(
-				columnCreatedResult.value,
-			);
-			if (!columnSavedResult.isSuccess) return columnSavedResult;
-
-			return columnSavedResult;
+			return columnCreatedResult.isSuccess
+				? columnRepository.create(columnCreatedResult.value)
+				: Result.Error(columnCreatedResult.errors);
 		},
 	};
 };
