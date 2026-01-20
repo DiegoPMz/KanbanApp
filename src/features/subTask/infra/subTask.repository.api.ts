@@ -1,7 +1,7 @@
 import { httpClient } from "@/shared/api/api.client";
-import { ProblemDetails } from "@/shared/api/http-error.interceptor";
+import { HttpClientErrorResponse } from "@/shared/api/http-error.interceptor";
 import { AppError, Result } from "@/shared/lib/result";
-import { AxiosError, HttpStatusCode } from "axios";
+import { HttpStatusCode } from "axios";
 import {
 	subTaskPersistenceErrors,
 	subTaskValidationError,
@@ -21,17 +21,9 @@ export const apiSubTaskRepository: ISubTaskRepository = {
 		httpClient
 			.get(`/subtasks/${id}`)
 			.then((res) => toSubTask(res.data))
-			.catch((error: AxiosError<ProblemDetails>) => {
-				if (error.response?.data.status === HttpStatusCode.NotFound)
-					return Result.Error([subTaskPersistenceErrors.notFound(id)]);
-
-				if (error.response?.data.status === HttpStatusCode.BadRequest)
-					return Result.Error([subTaskValidationError.invalidId(id)]);
-
-				return Result.Error([
-					subTaskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
-				]);
-			}),
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpSubTaskErrorToResult(error, { id } as SubTaskModel),
+			),
 
 	create: (subTask: SubTaskModel): Promise<Result<SubTaskModel>> =>
 		httpClient
@@ -41,28 +33,9 @@ export const apiSubTaskRepository: ISubTaskRepository = {
 				isCompleted: subTask.isCompleted,
 			})
 			.then((res) => toSubTask(res.data))
-			.catch((error: AxiosError<ProblemDetails>) => {
-				if (error.response?.data.status === HttpStatusCode.BadRequest) {
-					const badRequestErrors: AppError[] = [];
-					if (error.response?.data.errors?.description)
-						badRequestErrors.push(
-							subTaskValidationError.tooLongDescription("UNDEFINED"),
-						);
-					if (error.response?.data.errors?.isCompleted)
-						badRequestErrors.push(
-							subTaskValidationError.invalidIsCompleted("UNDEFINED"),
-						);
-					if (error.response?.data.errors?.taskId)
-						badRequestErrors.push(
-							subTaskValidationError.invalidTaskId("UNDEFINED"),
-						);
-					if (badRequestErrors.length > 0)
-						return Result.Error(badRequestErrors);
-				}
-				return Result.Error([
-					subTaskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
-				]);
-			}),
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpSubTaskErrorToResult(error, subTask),
+			),
 
 	update: (subTask: SubTaskModel): Promise<Result<SubTaskModel>> =>
 		httpClient
@@ -71,42 +44,17 @@ export const apiSubTaskRepository: ISubTaskRepository = {
 				isCompleted: subTask.isCompleted,
 			})
 			.then((res) => toSubTask(res.data))
-			.catch((error: AxiosError<ProblemDetails>) => {
-				if (error.response?.data.status === HttpStatusCode.NotFound)
-					return Result.Error([subTaskPersistenceErrors.notFound(subTask.id)]);
-				if (error.response?.data.status === HttpStatusCode.BadRequest) {
-					const badRequestErrors: AppError[] = [];
-					if (error.response?.data.errors?.description)
-						badRequestErrors.push(
-							subTaskValidationError.tooLongDescription("UNDEFINED"),
-						);
-					if (error.response?.data.errors?.isCompleted)
-						badRequestErrors.push(
-							subTaskValidationError.invalidIsCompleted("UNDEFINED"),
-						);
-					if (badRequestErrors.length > 0)
-						return Result.Error(badRequestErrors);
-				}
-				return Result.Error([
-					subTaskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
-				]);
-			}),
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpSubTaskErrorToResult(error, subTask),
+			),
 
 	delete: (subTask: SubTaskModel): Promise<Result<string>> =>
 		httpClient
 			.delete(`/subtasks/${subTask.id}`)
 			.then(() => Result.Success("SubTask deleted successfully"))
-			.catch((error: AxiosError<ProblemDetails>) => {
-				if (error.response?.data.status === HttpStatusCode.NotFound)
-					return Result.Error([subTaskPersistenceErrors.notFound(subTask.id)]);
-
-				if (error.response?.data.status === HttpStatusCode.BadRequest)
-					return Result.Error([subTaskValidationError.invalidId(subTask.id)]);
-
-				return Result.Error([
-					subTaskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
-				]);
-			}),
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpSubTaskErrorToResult(error, subTask),
+			),
 };
 
 export const toSubTask = (dto: SubTaskApiDto) => {
@@ -116,4 +64,43 @@ export const toSubTask = (dto: SubTaskApiDto) => {
 		description: dto.description,
 		isCompleted: dto.isCompleted,
 	});
+};
+
+const mapHttpSubTaskErrorToResult = <R = SubTaskModel>(
+	error: HttpClientErrorResponse,
+	model: SubTaskModel,
+): Result<R> => {
+	const statusCode = error.response?.status;
+	const responseData = error.response?.data;
+
+	if (statusCode === HttpStatusCode.NotFound) {
+		return Result.Error([subTaskPersistenceErrors.notFound(model.id)]);
+	}
+
+	if (statusCode === HttpStatusCode.BadRequest && responseData?.errors) {
+		const validationErrors: AppError[] = [];
+		const fields = responseData.errors;
+
+		if (fields.id)
+			validationErrors.push(subTaskValidationError.invalidId(model.id));
+
+		if (fields.taskId)
+			validationErrors.push(subTaskValidationError.invalidTaskId(model.id));
+
+		if (fields.description)
+			validationErrors.push(
+				subTaskValidationError.tooLongDescription(model.id),
+			);
+
+		if (fields.isCompleted)
+			validationErrors.push(
+				subTaskValidationError.invalidIsCompleted(model.id),
+			);
+
+		if (validationErrors.length > 0) return Result.Error(validationErrors);
+	}
+
+	return Result.Error([
+		subTaskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
+	]);
 };

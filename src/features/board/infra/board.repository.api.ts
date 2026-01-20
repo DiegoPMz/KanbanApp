@@ -2,9 +2,9 @@ import { ColumnModel } from "@/features/column";
 import { SubTaskModel } from "@/features/subTask/domain/subTask.model";
 import { TaskModel } from "@/features/task";
 import { httpClient } from "@/shared/api/api.client";
-import { ProblemDetails } from "@/shared/api/http-error.interceptor";
-import { Result } from "@/shared/lib/result";
-import { AxiosError, HttpStatusCode } from "axios";
+import { HttpClientErrorResponse } from "@/shared/api/http-error.interceptor";
+import { AppError, Result } from "@/shared/lib/result";
+import { HttpStatusCode } from "axios";
 import { BoardFullDetailsModel } from "../domain/board.board-full-details.model";
 import {
 	boardRepositoryErrors,
@@ -13,7 +13,7 @@ import {
 import { Board, BoardModel } from "../domain/board.model";
 import { IBoardRepository } from "../domain/board.repository";
 
-interface boardDto {
+interface boardApiDto {
 	id: string;
 	name: string;
 }
@@ -34,7 +34,7 @@ interface BoardFullDetailsDTO {
 			description: string;
 			isCompleted: boolean;
 			position: number;
-			priority: string;
+			priority: "low" | "medium" | "high";
 			subTasks: Array<{
 				id: string;
 				boardTaskId: string;
@@ -47,177 +47,69 @@ interface BoardFullDetailsDTO {
 
 export const apiBoardRepository: IBoardRepository = {
 	// TODO: implement proper pagination
-	findPaginated: async (page: number, limit: number) => {
-		try {
-			const response = await httpClient.get<boardDto[]>(
-				`/boards?page=${page}&limit=${limit}`,
-			);
+	findPaginated: (page: number, limit: number): Promise<Result<BoardModel[]>> =>
+		httpClient
+			.get<boardApiDto[]>(`/boards?page=${page}&limit=${limit}`)
+			.then((res) =>
+				Result.Success(res.data.map((toBoardDto) => toBoard(toBoardDto).value)),
+			)
+			.catch(() =>
+				Result.Error([boardRepositoryErrors.dataNotFound("UNDEFINED", "api")]),
+			),
 
-			const toBoardModels: BoardModel[] = [];
+	findById: (boardId: BoardModel["id"]): Promise<Result<BoardModel>> =>
+		httpClient
+			.get<boardApiDto>(`/boards/${boardId}`)
+			.then((res) => toBoard(res.data))
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpBoardErrorToResult(error, { id: boardId } as BoardModel),
+			),
 
-			for (const boardDto of response.data) {
-				const boardModelResult = Board({
-					id: boardDto.id,
-					name: boardDto.name,
-					columnIds: [],
-				});
-
-				if (!boardModelResult.isSuccess) {
-					console.error(
-						`invalid board. Id:${boardDto.id}, Name : ${boardDto.name}`,
-					);
-					continue;
-				}
-
-				toBoardModels.push(boardModelResult.value);
-			}
-
-			return Result.Success(toBoardModels);
-		} catch {
-			return Result.Error([]);
-		}
-	},
-
-	findById: async (boardId: BoardModel["id"]): Promise<Result<BoardModel>> => {
-		try {
-			const res = await httpClient.get<boardDto>(`/boards/${boardId}`);
-			return Board({
-				id: res.data.id,
-				name: res.data.name,
-				columnIds: [],
-			});
-		} catch (error) {
-			if (error instanceof AxiosError) {
-				const response = error.response?.data as ProblemDetails;
-
-				if (response.status === HttpStatusCode.NotFound)
-					return Result.Error([boardRepositoryErrors.notFound(boardId)]);
-
-				if (response.status === HttpStatusCode.BadRequest)
-					return Result.Error([boardValidationErrors.invalidId(boardId)]);
-			}
-
-			return Result.Error([
-				boardRepositoryErrors.dataNotFound("UNDEFINED", "api"),
-			]);
-		}
-	},
-
-	create: async (data: BoardModel): Promise<Result<BoardModel>> => {
-		try {
-			const res = await httpClient.post<boardDto>("/boards", {
+	create: (data: BoardModel): Promise<Result<BoardModel>> =>
+		httpClient
+			.post<boardApiDto>("/boards", {
 				name: data.name,
-			});
-			return Board({
-				id: res.data.id,
-				name: res.data.name,
-				columnIds: [],
-			});
-		} catch (error) {
-			if (error instanceof AxiosError) {
-				const response = error.response?.data as ProblemDetails;
+			})
+			.then((res) => toBoard(res.data))
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpBoardErrorToResult(error, data),
+			),
 
-				return response.errors?.name
-					? Result.Error([
-							{
-								code: "BOARD_NAME_INVALID",
-								message: response.errors.name[0],
-								details: { id: data.id, date: new Date().toISOString() },
-							},
-						])
-					: Result.Error([
-							boardRepositoryErrors.dataNotFound("UNDEFINED", "api"),
-						]);
-			}
-
-			return Result.Error([
-				boardRepositoryErrors.dataNotFound("UNDEFINED", "api"),
-			]);
-		}
-	},
-
-	update: async (data: BoardModel): Promise<Result<BoardModel>> => {
-		try {
-			const res = await httpClient.patch<boardDto>(`/boards/${data.id}`, {
+	update: (data: BoardModel): Promise<Result<BoardModel>> =>
+		httpClient
+			.patch<boardApiDto>(`/boards/${data.id}`, {
 				name: data.name,
-			});
-			return Board({
-				id: res.data.id,
-				name: res.data.name,
-				columnIds: data.columnIds,
-			});
-		} catch (error) {
-			if (error instanceof AxiosError) {
-				const response = error.response?.data as ProblemDetails;
+			})
+			.then((res) => toBoard(res.data))
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpBoardErrorToResult(error, data),
+			),
 
-				if (response.status === HttpStatusCode.NotFound)
-					return Result.Error([boardRepositoryErrors.notFound(data.id)]);
+	delete: (data: BoardModel): Promise<Result<string>> =>
+		httpClient
+			.delete<string>(`/boards/${data.id}`)
+			.then((res) => Result.Success(res.data))
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpBoardErrorToResult<string>(error, data),
+			),
 
-				if (response.status === HttpStatusCode.BadRequest)
-					return response.errors?.name
-						? Result.Error([
-								{
-									code: "BOARD_NAME_INVALID",
-									message: response.errors.name[0],
-									details: { id: data.id, date: new Date().toISOString() },
-								},
-							])
-						: Result.Error([
-								boardRepositoryErrors.dataNotFound("UNDEFINED", "api"),
-							]);
-			}
-
-			return Result.Error([
-				boardRepositoryErrors.dataNotFound("UNDEFINED", "api"),
-			]);
-		}
-	},
-
-	delete: async (data: BoardModel) => {
-		try {
-			const res = await httpClient.delete<string>(`/boards/${data.id}`);
-			return res.data ? Result.Success(res.data) : Result.Error([]);
-		} catch (error) {
-			if (error instanceof AxiosError) {
-				const response = error.response?.data as ProblemDetails;
-
-				if (response.status === HttpStatusCode.NotFound)
-					return Result.Error([boardRepositoryErrors.notFound(data.id)]);
-
-				if (response.status === HttpStatusCode.BadRequest)
-					return Result.Error([boardValidationErrors.invalidId(data.id)]);
-			}
-
-			return Result.Error([
-				boardRepositoryErrors.dataNotFound("UNDEFINED", "api"),
-			]);
-		}
-	},
-
-	getBoardDetails: async (id: string) => {
-		try {
-			const res = await httpClient.get<BoardFullDetailsDTO>(
-				`/boards/${id}/full-details`,
-			);
-
-			return Result.Success(mapToBoardData(res.data));
-		} catch (error) {
-			if (error instanceof AxiosError) {
-				const response = error.response?.data as ProblemDetails;
-
-				if (response.status === HttpStatusCode.NotFound)
-					return Result.Error([boardRepositoryErrors.notFound(id)]);
-
-				if (response.status === HttpStatusCode.BadRequest)
-					return Result.Error([boardValidationErrors.invalidId(id)]);
-			}
-
-			return Result.Error([
-				boardRepositoryErrors.dataNotFound("UNDEFINED", "api"),
-			]);
-		}
-	},
+	getBoardDetails: (id: string): Promise<Result<BoardFullDetailsModel>> =>
+		httpClient
+			.get<BoardFullDetailsDTO>(`/boards/${id}/full-details`)
+			.then((res) => Result.Success(mapToBoardData(res.data)))
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpBoardErrorToResult<BoardFullDetailsModel>(error, {
+					id,
+				} as BoardModel),
+			),
 };
+
+const toBoard = (dto: boardApiDto): Result<BoardModel> =>
+	Board({
+		id: dto.id,
+		name: dto.name,
+		columnIds: [],
+	});
 
 const mapToBoardData = (dto: BoardFullDetailsDTO): BoardFullDetailsModel => {
 	const columns: ColumnModel[] = [];
@@ -258,4 +150,31 @@ const mapToBoardData = (dto: BoardFullDetailsDTO): BoardFullDetailsModel => {
 	});
 
 	return { columns, tasks, subTasks };
+};
+
+const mapHttpBoardErrorToResult = <R = BoardModel>(
+	error: HttpClientErrorResponse,
+	model: BoardModel,
+): Result<R> => {
+	const statusCode = error.response?.status;
+	const responseData = error.response?.data;
+
+	if (statusCode === HttpStatusCode.NotFound) {
+		return Result.Error([boardRepositoryErrors.notFound(model.id)]);
+	}
+
+	if (statusCode === HttpStatusCode.BadRequest && responseData?.errors) {
+		const validationErrors: AppError[] = [];
+		const fields = responseData.errors;
+
+		if (fields.id)
+			validationErrors.push(boardValidationErrors.invalidId(model.id));
+
+		if (fields.name)
+			validationErrors.push(boardValidationErrors.tooLongName(model.id));
+
+		if (validationErrors.length > 0) return Result.Error(validationErrors);
+	}
+
+	return Result.Error([boardRepositoryErrors.dataNotFound("UNDEFINED", "api")]);
 };

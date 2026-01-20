@@ -1,4 +1,4 @@
-import { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { AxiosError, HttpStatusCode, InternalAxiosRequestConfig } from "axios";
 import z from "zod";
 
 const problemDetailsSchema = z.object({
@@ -11,18 +11,19 @@ const problemDetailsSchema = z.object({
 });
 
 export type ProblemDetails = z.infer<typeof problemDetailsSchema>;
+export type HttpClientErrorResponse = AxiosError<ProblemDetails>;
 
 export const DEFAULT_PROBLEM_DETAILS: ProblemDetails = {
 	type: "about:blank",
 	title: "An unexpected error occurred",
-	status: 500,
+	status: HttpStatusCode.InternalServerError,
 	detail:
 		"The server responded with an invalid error format or there was a network issue.",
 	instance: "client-side-fallback",
 	errors: undefined,
 };
 
-export const errorInterceptor = async (error: AxiosError<ProblemDetails>) => {
+export const errorInterceptor = async (error: HttpClientErrorResponse) => {
 	const problemDetailsResult = await problemDetailsSchema.safeParseAsync(
 		error.response?.data,
 	);
@@ -37,7 +38,7 @@ export const errorInterceptor = async (error: AxiosError<ProblemDetails>) => {
 		if (!error.response)
 			error.response = {
 				data: DEFAULT_PROBLEM_DETAILS,
-				status: 500,
+				status: HttpStatusCode.InternalServerError,
 				statusText: "Internal Server Error",
 				headers: {},
 				config: error.config as InternalAxiosRequestConfig,

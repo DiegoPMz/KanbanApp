@@ -1,13 +1,14 @@
 import { httpClient } from "@/shared/api/api.client";
-import { ProblemDetails } from "@/shared/api/http-error.interceptor";
+import { HttpClientErrorResponse } from "@/shared/api/http-error.interceptor";
 import { AppError, Result } from "@/shared/lib/result";
-import { AxiosError, AxiosResponse, HttpStatusCode } from "axios";
+import { AxiosResponse, HttpStatusCode } from "axios";
 import {
 	taskPersistenceErrors,
 	taskValidationError,
 } from "../domain/task.errors";
-import { Task, TaskModel } from "../domain/task.model";
+import { Task } from "../domain/task.model";
 import { ITaskRepository } from "../domain/task.repository";
+import { TaskModel } from "./../domain/task.model";
 
 interface TaskApiDto {
 	columnId: string;
@@ -18,8 +19,6 @@ interface TaskApiDto {
 	position: number;
 	priority: "low" | "medium" | "high";
 }
-
-type CreateTaskRequest = Omit<TaskApiDto, "id">;
 
 interface UpdateTaskRequest {
 	id: string;
@@ -37,180 +36,71 @@ interface ReorderBody {
 }
 
 export const apiTaskRepository: ITaskRepository = {
-	findById: async (taskId: TaskModel["id"]): Promise<Result<TaskModel>> => {
-		try {
-			const res = await httpClient.get<TaskApiDto>(`/boardTasks/${taskId}`);
-			return toTask(res.data);
-		} catch (error) {
-			if (error instanceof AxiosError) {
-				const response = error.response?.data as ProblemDetails;
+	findById: (taskId: TaskModel["id"]): Promise<Result<TaskModel>> =>
+		httpClient
+			.get<TaskApiDto>(`/boardTasks/${taskId}`)
+			.then((res) => toTask(res.data))
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpTaskErrorToResult(error, { id: taskId } as TaskModel),
+			),
 
-				if (response.status === HttpStatusCode.NotFound)
-					return Result.Error([taskPersistenceErrors.notFound(taskId)]);
-
-				if (response.status === HttpStatusCode.BadRequest)
-					return Result.Error([taskValidationError.invalidId(taskId)]);
-			}
-
-			return Result.Error([
-				taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
-			]);
-		}
-	},
-
-	create: async (data: TaskModel): Promise<Result<TaskModel>> => {
-		const createTask: CreateTaskRequest = {
-			columnId: data.columnId,
-			title: data.title,
-			description: data.description,
-			isCompleted: data.isCompleted,
-			position: data.position,
-			priority: data.priority,
-		};
-
-		try {
-			const res = await httpClient.post<TaskApiDto>("/boardTasks", createTask);
-			return toTask(res.data);
-		} catch (error) {
-			if (!(error instanceof AxiosError))
-				return Result.Error([
-					taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
-				]);
-
-			const response = error.response?.data as ProblemDetails;
-
-			if (response.status === HttpStatusCode.BadRequest) {
-				const badRequestErrors: AppError[] = [];
-
-				if (response.errors?.title)
-					badRequestErrors.push(taskValidationError.tooLongTitle("UNDEFINED"));
-				if (response.errors?.priority)
-					badRequestErrors.push(
-						taskValidationError.invalidPriority("UNDEFINED", data.priority),
-					);
-				if (response.errors?.position) {
-					badRequestErrors.push(
-						taskValidationError.invalidPosition("UNDEFINED", data.position),
-					);
-				}
-
-				if (badRequestErrors.length > 0) return Result.Error(badRequestErrors);
-			}
-
-			return Result.Error([
-				taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
-			]);
-		}
-	},
-
-	update: async (data: TaskModel): Promise<Result<TaskModel>> => {
-		try {
-			const res = await httpClient.put<
-				TaskApiDto,
-				AxiosResponse<TaskApiDto>,
-				UpdateTaskRequest
-			>(`/boardTasks/${data.id}`, {
+	create: (data: TaskModel): Promise<Result<TaskModel>> =>
+		httpClient
+			.post<TaskApiDto>("/boardTasks", {
 				columnId: data.columnId,
-				id: data.id,
 				title: data.title,
 				description: data.description,
 				isCompleted: data.isCompleted,
-				priority: data.priority,
-			});
-
-			return toTask(res.data);
-		} catch (error) {
-			if (!(error instanceof AxiosError))
-				return Result.Error([
-					taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
-				]);
-
-			const response = error.response?.data as ProblemDetails;
-
-			if (response.status === HttpStatusCode.NotFound)
-				return Result.Error([taskPersistenceErrors.notFound(data.id)]);
-
-			if (response.status === HttpStatusCode.BadRequest) {
-				const badRequestErrors: AppError[] = [];
-
-				if (response.errors?.title)
-					badRequestErrors.push(taskValidationError.tooLongTitle("UNDEFINED"));
-				if (response.errors?.priority)
-					badRequestErrors.push(
-						taskValidationError.invalidPriority("UNDEFINED", data.priority),
-					);
-
-				if (badRequestErrors.length > 0) return Result.Error(badRequestErrors);
-			}
-
-			return Result.Error([
-				taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
-			]);
-		}
-	},
-
-	delete: async (data: TaskModel) => {
-		try {
-			const res = await httpClient.delete<string>(`/boardTasks/${data.id}`);
-			return res.data ? Result.Success(res.data) : Result.Error([]);
-		} catch (error) {
-			if (error instanceof AxiosError) {
-				const response = error.response?.data as ProblemDetails;
-
-				if (response.status === HttpStatusCode.NotFound)
-					return Result.Error([taskPersistenceErrors.notFound(data.id)]);
-
-				if (response.status === HttpStatusCode.BadRequest)
-					return Result.Error([taskValidationError.invalidId(data.id)]);
-			}
-
-			return Result.Error([
-				taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
-			]);
-		}
-	},
-
-	reorder: async (data: TaskModel) => {
-		try {
-			const res = await httpClient.put<
-				TaskModel[],
-				AxiosResponse<TaskModel[]>,
-				ReorderBody
-			>(`/boardTasks/reorder`, {
-				columnId: data.columnId,
-				id: data.id,
 				position: data.position,
-			});
-			return res.data ? Result.Success(res.data) : Result.Error([]);
-		} catch (error) {
-			if (!(error instanceof AxiosError))
-				return Result.Error([
-					taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
-				]);
+				priority: data.priority,
+			})
+			.then((res) => toTask(res.data))
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpTaskErrorToResult(error, data),
+			),
 
-			const response = error.response?.data as ProblemDetails;
+	update: (data: TaskModel): Promise<Result<TaskModel>> =>
+		httpClient
+			.patch<TaskApiDto, AxiosResponse<TaskApiDto>, UpdateTaskRequest>(
+				`/boardTasks/${data.id}`,
+				{
+					columnId: data.columnId,
+					id: data.id,
+					title: data.title,
+					description: data.description,
+					isCompleted: data.isCompleted,
+					priority: data.priority,
+				},
+			)
+			.then((res) => toTask(res.data))
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpTaskErrorToResult(error, data),
+			),
 
-			if (response.status === HttpStatusCode.NotFound)
-				return Result.Error([taskPersistenceErrors.notFound(data.id)]);
+	delete: (data: TaskModel) =>
+		httpClient
+			.delete<string>(`/boardTasks/${data.id}`)
+			.then((res) => Result.Success(res.data))
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpTaskErrorToResult(error, data),
+			),
 
-			if (response.status === HttpStatusCode.BadRequest) {
-				const badRequestErrors: AppError[] = [];
-
-				if (response.errors?.id)
-					badRequestErrors.push(taskValidationError.invalidId(data.id));
-				if (response.errors?.position)
-					badRequestErrors.push(
-						taskValidationError.negativePosition(data.id, data.position),
-					);
-
-				if (badRequestErrors.length > 0) return Result.Error(badRequestErrors);
-			}
-
-			return Result.Error([
-				taskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
-			]);
-		}
-	},
+	reorder: (data: TaskModel): Promise<Result<TaskModel[]>> =>
+		httpClient
+			.patch<TaskApiDto[], AxiosResponse<TaskApiDto[]>, ReorderBody>(
+				`/boardTasks/reorder`,
+				{
+					columnId: data.columnId,
+					id: data.id,
+					position: data.position,
+				},
+			)
+			.then((res) =>
+				Result.Success(res.data.map((taskDto) => toTask(taskDto).value)),
+			)
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpTaskErrorToResult(error, data),
+			),
 };
 
 const toTask = (model: TaskApiDto) =>
@@ -224,3 +114,48 @@ const toTask = (model: TaskApiDto) =>
 		priority: model.priority,
 		subtaskIds: [],
 	});
+
+const mapHttpTaskErrorToResult = <R = TaskModel>(
+	error: HttpClientErrorResponse,
+	model: TaskModel,
+): Result<R> => {
+	const statusCode = error.response?.status;
+	const responseData = error.response?.data;
+
+	if (statusCode === HttpStatusCode.NotFound) {
+		return Result.Error([taskPersistenceErrors.notFound(model.id)]);
+	}
+
+	if (statusCode === HttpStatusCode.BadRequest && responseData?.errors) {
+		const validationErrors: AppError[] = [];
+		const fields = responseData.errors;
+
+		if (fields.title)
+			validationErrors.push(taskValidationError.tooLongTitle(model.id));
+
+		if (fields.priority)
+			validationErrors.push(
+				taskValidationError.invalidPriority(model.id, model.priority),
+			);
+
+		if (fields.position)
+			validationErrors.push(
+				taskValidationError.negativePosition(model.id, model.position),
+			);
+
+		if (fields.columnId)
+			validationErrors.push(taskValidationError.invalidColumnId(model.id));
+
+		if (fields.id)
+			validationErrors.push(taskValidationError.invalidId(model.id));
+
+		if (fields.isCompleted !== undefined)
+			validationErrors.push(
+				taskValidationError.invalidCompletionStatus(model.id),
+			);
+
+		if (validationErrors.length > 0) return Result.Error(validationErrors);
+	}
+
+	return Result.Error([taskPersistenceErrors.dataNotFound("UNDEFINED", "api")]);
+};

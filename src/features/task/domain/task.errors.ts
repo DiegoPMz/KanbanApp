@@ -50,6 +50,11 @@ export const taskValidationError = {
 		message: "Task subtask IDs must be a valid array of strings.",
 		details: { id, date: new Date().toISOString() },
 	}),
+	invalidCompletionStatus: (id: string): AppError => ({
+		code: "TASK_COMPLETION_STATUS_INVALID",
+		message: "Task completion status must be a boolean.",
+		details: { id, date: new Date().toISOString() },
+	}),
 };
 
 /**
