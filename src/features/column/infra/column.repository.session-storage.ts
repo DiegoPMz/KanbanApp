@@ -1,7 +1,7 @@
 import { boardRepositoryErrors } from "@/features/board";
-import { reorderAndResequence } from "@/shared/lib/reorder";
-import { Result } from "@/shared/lib/result";
-import { parseData } from "@/shared/lib/utils";
+import { Result } from "@/shared/domain/result";
+import { reorderAndResequence } from "@/shared/domain/utils/reorder.utils";
+import { safeJsonParse } from "@/shared/infra/utils/json.utils";
 import z from "zod";
 import { Column, ColumnModel } from "../domain/column.model";
 import { IColumnRepository } from "../domain/column.repository";
@@ -128,7 +128,7 @@ type ColumnSessionStorage = z.infer<typeof columnSessionStorageSchema>;
 export const loadPersistedColumns = async (): Promise<
 	Result<ColumnModel[]>
 > => {
-	const persistedData = parseData<ColumnSessionStorage[]>(
+	const persistedData = safeJsonParse<ColumnSessionStorage[]>(
 		sessionStorage.getItem(COLUMNS_STORAGE_KEY) as string,
 	);
 	if (!persistedData)

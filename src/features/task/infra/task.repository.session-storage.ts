@@ -1,6 +1,6 @@
-import { reorderAndResequence } from "@/shared/lib/reorder";
-import { Result } from "@/shared/lib/result";
-import { parseData } from "@/shared/lib/utils";
+import { Result } from "@/shared/domain/result";
+import { reorderAndResequence } from "@/shared/domain/utils/reorder.utils";
+import { safeJsonParse } from "@/shared/infra/utils/json.utils";
 import z from "zod";
 import {
 	taskPersistenceErrors,
@@ -120,7 +120,7 @@ type TaskSessionStorage = z.infer<typeof taskSessionStorageSchema>;
 const taskListSessionStorageSchema = z.array(taskSessionStorageSchema);
 
 export const loadPersistedTasks = async (): Promise<Result<TaskModel[]>> => {
-	const persistedData = parseData<TaskSessionStorage[]>(
+	const persistedData = safeJsonParse<TaskSessionStorage[]>(
 		sessionStorage.getItem(TASKS_STORAGE_KEY) as string,
 	);
 	if (!persistedData)

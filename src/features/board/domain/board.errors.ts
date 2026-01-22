@@ -1,4 +1,4 @@
-import { AppError } from "@/shared/lib/result";
+import { AppError } from "@/shared/domain/result";
 
 /**
  * Errores de Dominio / Validación

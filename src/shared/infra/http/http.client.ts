@@ -1,5 +1,5 @@
 import axios, { CreateAxiosDefaults } from "axios";
-import { errorInterceptor } from "./http-error.interceptor";
+import { errorInterceptor } from "./axios-error.interceptor";
 
 export const baseURL = import.meta.env.VITE_API_URL;
 
@@ -16,4 +16,3 @@ const config: CreateAxiosDefaults = {
 export const httpClient = axios.create(config);
 
 httpClient.interceptors.response.use((res) => res, errorInterceptor);
-// httpClient.interceptors.response.use((res) => res, refreshTokenInterceptor);

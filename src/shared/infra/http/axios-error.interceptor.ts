@@ -1,7 +1,11 @@
+import {
+	DEFAULT_PROBLEM_DETAILS,
+	ProblemDetails,
+} from "@/shared/domain/http/problem-details";
 import { AxiosError, HttpStatusCode, InternalAxiosRequestConfig } from "axios";
 import z from "zod";
 
-const problemDetailsSchema = z.object({
+const problemDetailsSchema: z.ZodType<ProblemDetails> = z.object({
 	type: z.string(),
 	title: z.string(),
 	status: z.number(),
@@ -10,18 +14,7 @@ const problemDetailsSchema = z.object({
 	errors: z.record(z.string(), z.string().array()).optional(),
 });
 
-export type ProblemDetails = z.infer<typeof problemDetailsSchema>;
 export type HttpClientErrorResponse = AxiosError<ProblemDetails>;
-
-export const DEFAULT_PROBLEM_DETAILS: ProblemDetails = {
-	type: "about:blank",
-	title: "An unexpected error occurred",
-	status: HttpStatusCode.InternalServerError,
-	detail:
-		"The server responded with an invalid error format or there was a network issue.",
-	instance: "client-side-fallback",
-	errors: undefined,
-};
 
 export const errorInterceptor = async (error: HttpClientErrorResponse) => {
 	const problemDetailsResult = await problemDetailsSchema.safeParseAsync(

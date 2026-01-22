@@ -1,4 +1,4 @@
-import { Result } from "@/shared/lib/result";
+import { Result } from "@/shared/domain/result";
 import { SubTaskModel } from "../domain/subTask.model";
 import { ISubTaskRepository } from "../domain/subTask.repository";
 import { apiSubTaskRepository } from "./subTask.repository.api";

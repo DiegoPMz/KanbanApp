@@ -1,4 +1,4 @@
-import { Result } from "@/shared/lib/result";
+import { Result } from "@/shared/domain/result";
 import { UserModel } from "./user.model";
 
 export interface IUserRepository {

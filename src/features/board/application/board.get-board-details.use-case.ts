@@ -1,4 +1,4 @@
-import { Result } from "@/shared/lib/result";
+import { Result } from "@/shared/domain/result";
 import { BoardFullDetailsModel } from "../domain/board.board-full-details.model";
 import { IBoardRepository } from "../domain/board.repository";
 

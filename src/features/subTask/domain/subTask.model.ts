@@ -1,4 +1,4 @@
-import { Result } from "@/shared/lib/result";
+import { Result } from "@/shared/domain/result";
 import { subTaskValidationError } from "./subTask.errors";
 
 export interface SubTaskModel {

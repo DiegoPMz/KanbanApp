@@ -1,8 +1,8 @@
 import { ColumnModel, loadPersistedColumns } from "@/features/column";
 import { SubTaskModel } from "@/features/subTask";
 import { loadPersistedTasks, TaskModel } from "@/features/task";
-import { Result } from "@/shared/lib/result";
-import { parseData } from "@/shared/lib/utils";
+import { Result } from "@/shared/domain/result";
+import { safeJsonParse } from "@/shared/infra/utils/json.utils";
 import z from "zod";
 import { BoardFullDetailsModel } from "../domain/board.board-full-details.model";
 import { Board, BoardModel } from "../domain/board.model";
@@ -140,7 +140,7 @@ type BoardSessionStorage = z.infer<typeof boardSessionStorageSchema>;
 const boardListSessionStorageSchema = z.array(boardSessionStorageSchema);
 
 export const loadPersistedBoards = async (): Promise<Result<BoardModel[]>> => {
-	const persistedBoards = parseData<BoardSessionStorage[]>(
+	const persistedBoards = safeJsonParse<BoardSessionStorage[]>(
 		sessionStorage.getItem(BOARD_STORAGE_KEY) as string,
 	);
 	if (!persistedBoards)

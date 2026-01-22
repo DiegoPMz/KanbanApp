@@ -1,6 +1,6 @@
-import { httpClient } from "@/shared/api/api.client";
-import { HttpClientErrorResponse } from "@/shared/api/http-error.interceptor";
-import { AppError, Result } from "@/shared/lib/result";
+import { AppError, Result } from "@/shared/domain/result";
+import { HttpClientErrorResponse } from "@/shared/infra/http/axios-error.interceptor";
+import { httpClient } from "@/shared/infra/http/http.client";
 import { AxiosResponse, HttpStatusCode } from "axios";
 import {
 	taskPersistenceErrors,

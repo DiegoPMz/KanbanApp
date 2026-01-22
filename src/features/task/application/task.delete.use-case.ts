@@ -1,4 +1,4 @@
-import { Result } from "@/shared/lib/result";
+import { Result } from "@/shared/domain/result";
 import { TaskModel } from "../domain/task.model";
 import { ITaskRepository } from "../domain/task.repository";
 

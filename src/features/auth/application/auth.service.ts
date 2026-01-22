@@ -1,4 +1,4 @@
-import { Result } from "@/shared/lib/result";
+import { Result } from "@/shared/domain/result";
 
 export interface IAuthService {
 	logout: () => Promise<Result<string>>;

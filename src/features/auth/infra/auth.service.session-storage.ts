@@ -1,4 +1,4 @@
-import { Result } from "@/shared/lib/result";
+import { Result } from "@/shared/domain/result";
 import { IAuthService } from "../application/auth.service";
 
 export const sessionStorageAuthService = (

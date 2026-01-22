@@ -1,4 +1,4 @@
-import { Result } from "@/shared/lib/result";
+import { Result } from "@/shared/domain/result";
 import { describe, expect, test } from "vitest";
 
 import { boardValidationErrors } from "../board.errors";

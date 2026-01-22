@@ -1,5 +1,5 @@
 import { IUserCreator } from "@/features/user";
-import { Result } from "@/shared/lib/result";
+import { Result } from "@/shared/domain/result";
 import { IAuthService } from "./auth.service";
 
 export const loginDemo = (

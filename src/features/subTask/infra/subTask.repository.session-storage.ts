@@ -1,5 +1,5 @@
-import { Result } from "@/shared/lib/result";
-import { parseData } from "@/shared/lib/utils";
+import { Result } from "@/shared/domain/result";
+import { safeJsonParse } from "@/shared/infra/utils/json.utils";
 import z from "zod";
 import { subTaskPersistenceErrors } from "../domain/subTask.errors";
 import { SubTask, SubTaskModel } from "../domain/subTask.model";
@@ -106,7 +106,7 @@ type SubTaskSessionStorage = z.infer<typeof subTaskSessionStorageSchema>;
 export const loadPersistedSubTasks = async (): Promise<
 	Result<SubTaskModel[]>
 > => {
-	const persistedData = parseData<SubTaskSessionStorage[]>(
+	const persistedData = safeJsonParse<SubTaskSessionStorage[]>(
 		sessionStorage.getItem(SUBTASKS_STORAGE_KEY) as string,
 	);
 	if (!persistedData)

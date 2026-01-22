@@ -1,4 +1,4 @@
-import { Result } from "@/shared/lib/result";
+import { Result } from "@/shared/domain/result";
 import { userValidationErrors } from "./user.errors";
 
 export const USER_SESSION_TYPES = {

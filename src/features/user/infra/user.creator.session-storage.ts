@@ -1,4 +1,4 @@
-import { Result } from "@/shared/lib/result";
+import { Result } from "@/shared/domain/result";
 import { IUserCreator } from "../application/user.creator";
 import {
 	User,

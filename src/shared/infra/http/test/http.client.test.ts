@@ -1,10 +1,11 @@
 import AxiosMockAdapter from "axios-mock-adapter";
 import { beforeEach, describe, expect, test } from "vitest";
-import { httpClient } from "../api.client";
+
 import {
 	DEFAULT_PROBLEM_DETAILS,
 	ProblemDetails,
-} from "../http-error.interceptor";
+} from "@/shared/domain/http/problem-details";
+import { httpClient } from "../http.client";
 
 const mock = new AxiosMockAdapter(httpClient);
 mock.adapter();

@@ -1,4 +1,4 @@
-import { Result } from "@/shared/lib/result";
+import { Result } from "@/shared/domain/result";
 import { BoardModel } from "../domain/board.model";
 import { IBoardRepository } from "../domain/board.repository";
 

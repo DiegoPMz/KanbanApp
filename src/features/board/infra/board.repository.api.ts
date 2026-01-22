@@ -1,9 +1,9 @@
 import { ColumnModel } from "@/features/column";
 import { SubTaskModel } from "@/features/subTask/domain/subTask.model";
 import { TaskModel } from "@/features/task";
-import { httpClient } from "@/shared/api/api.client";
-import { HttpClientErrorResponse } from "@/shared/api/http-error.interceptor";
-import { AppError, Result } from "@/shared/lib/result";
+import { AppError, Result } from "@/shared/domain/result";
+import { HttpClientErrorResponse } from "@/shared/infra/http/axios-error.interceptor";
+import { httpClient } from "@/shared/infra/http/http.client";
 import { HttpStatusCode } from "axios";
 import { BoardFullDetailsModel } from "../domain/board.board-full-details.model";
 import {

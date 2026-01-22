@@ -1,6 +1,6 @@
 export type AppError = {
-	code: string; // "INVALID_EMAIL", "SERVER_ERROR"
-	message: string; // Human-readable message
+	code: string;
+	message: string;
 	details?: unknown; // any metadata
 };
 

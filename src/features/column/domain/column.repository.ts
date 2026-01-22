@@ -1,4 +1,4 @@
-import { Result } from "@/shared/lib/result";
+import { Result } from "@/shared/domain/result";
 import { ColumnModel } from "./column.model";
 
 export interface IColumnRepository {

@@ -1,5 +1,5 @@
-import { Result } from "@/shared/lib/result";
-import { parseData } from "@/shared/lib/utils";
+import { Result } from "@/shared/domain/result";
+import { safeJsonParse } from "@/shared/infra/utils/json.utils";
 import z from "zod";
 import { userRepositoryErrors } from "../domain/user.errors";
 import {
@@ -46,7 +46,7 @@ const userSessionStorageSchema = z.object({
 type UserSessionStorage = z.infer<typeof userSessionStorageSchema>;
 
 const loadPersistedUser = async (): Promise<Result<UserModel>> => {
-	const persistedUser = parseData<UserSessionStorage>(
+	const persistedUser = safeJsonParse<UserSessionStorage>(
 		sessionStorage.getItem(USER_STORAGE_KEY) as string,
 	);
 	if (!persistedUser)
