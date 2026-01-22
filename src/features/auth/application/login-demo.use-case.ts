@@ -1,34 +1,18 @@
-import {
-	SESSION_TYPES,
-	THEME_TYPES,
-	User,
-} from "@/features/user/domain/user.model";
-import { IUserRepository } from "@/features/user/domain/user.repository";
+import { IUserCreator } from "@/features/user";
 import { Result } from "@/shared/lib/result";
+import { IAuthService } from "./auth.service";
 
-interface LoginDemoDto {
-	id: string;
-}
-
-type LoginDemoResponse = Result<LoginDemoDto>;
-
-export const loginDemo = (userRepository: IUserRepository) => {
+export const loginDemo = (
+	authService: IAuthService,
+	userCreator: IUserCreator,
+) => {
 	return {
-		handle: async (): Promise<LoginDemoResponse> => {
-			const userPersisted = await userRepository.getDetails();
-			if (userPersisted.isSuccess)
-				return Result.Success({ id: userPersisted.value.id });
+		handle: async (): Promise<Result<void>> => {
+			const demoUserResult = await userCreator.create();
+			if (!demoUserResult.isSuccess) return Result.Error(demoUserResult.errors);
 
-			const demoUser = User({
-				email: null,
-				theme: THEME_TYPES.LIGHT,
-				sessionType: SESSION_TYPES.DEMO,
-			});
-
-			if (!demoUser.isSuccess) throw new Error("Failed to create demo user");
-
-			const newUser = await userRepository.save(demoUser.value);
-			return Result.Success({ id: newUser.value.id });
+			await authService.externalAuthRedirect();
+			return Result.Success(undefined);
 		},
 	};
 };

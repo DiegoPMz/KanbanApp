@@ -1,17 +1,12 @@
 import { Result } from "@/shared/lib/result";
-import {
-	userEmailErrors,
-	userIdErrors,
-	userSessionTypeErrors,
-	userThemeErrors,
-} from "./user.errors";
+import { userValidationErrors } from "./user.errors";
 
-export const SESSION_TYPES = {
+export const USER_SESSION_TYPES = {
 	DEMO: "DEMO",
 	REGISTER: "REGISTER",
 } as const;
 
-export const THEME_TYPES = {
+export const USER_THEME_TYPES = {
 	LIGHT: "Light",
 	DARK: "Dark",
 } as const;
@@ -19,49 +14,42 @@ export const THEME_TYPES = {
 export interface UserModel {
 	id: string;
 	email: string | null;
-	theme: (typeof THEME_TYPES)[keyof typeof THEME_TYPES];
-	sessionType: keyof typeof SESSION_TYPES;
+	theme: (typeof USER_THEME_TYPES)[keyof typeof USER_THEME_TYPES];
+	sessionType: keyof typeof USER_SESSION_TYPES;
 }
 
 type UserInput = Omit<UserModel, "id"> & { id?: string };
 
 export const User = (data: UserInput): Result<UserModel> => {
-	if (!Object.values(SESSION_TYPES).includes(data.sessionType))
+	if (!Object.values(USER_SESSION_TYPES).includes(data.sessionType))
 		return Result.Error([
-			{
-				code: userSessionTypeErrors.code,
-				message: userSessionTypeErrors.messages.invalid,
-			},
+			userValidationErrors.invalidSessionType(
+				data.id || "undefined",
+				data.sessionType,
+			),
 		]);
 
-	if (data.sessionType === SESSION_TYPES.REGISTER && !data.id)
+	if (data.sessionType === USER_SESSION_TYPES.REGISTER && !data.id)
 		return Result.Error([
-			{
-				code: userIdErrors.code,
-				message: userIdErrors.messages.registeredWithoutId,
-			},
+			userValidationErrors.requiredIdForRegisteredUser(data.sessionType),
 		]);
 
-	if (data.sessionType === SESSION_TYPES.REGISTER && !data.email)
+	if (data.sessionType === USER_SESSION_TYPES.REGISTER && !data.email)
 		return Result.Error([
-			{
-				code: userEmailErrors.code,
-				message: userEmailErrors.messages.registeredWithoutEmail,
-			},
+			userValidationErrors.invalidEmailForRegisteredUser(
+				data.id || "undefined",
+			),
 		]);
 
-	if (!Object.values(THEME_TYPES).includes(data.theme))
+	if (!Object.values(USER_THEME_TYPES).includes(data.theme))
 		return Result.Error([
-			{
-				code: userThemeErrors.code,
-				message: userThemeErrors.messages.invalid,
-			},
+			userValidationErrors.invalidTheme(data.id || "undefined", data.theme),
 		]);
 
 	return Result.Success({
 		sessionType: data.sessionType,
 		id: data.id || crypto.randomUUID(),
-		email: data.sessionType === SESSION_TYPES.REGISTER ? data.email : null,
+		email: data.email,
 		theme: data.theme,
 	});
 };

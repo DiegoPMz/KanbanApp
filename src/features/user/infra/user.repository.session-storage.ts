@@ -1,77 +1,71 @@
 import { Result } from "@/shared/lib/result";
-import { SESSION_TYPES, User, UserModel } from "../domain/user.model";
+import { parseData } from "@/shared/lib/utils";
+import z from "zod";
+import { userRepositoryErrors } from "../domain/user.errors";
+import {
+	USER_SESSION_TYPES,
+	USER_THEME_TYPES,
+	User,
+	UserModel,
+} from "../domain/user.model";
 import { IUserRepository } from "../domain/user.repository";
 
 const USER_STORAGE_KEY = "DEMO_KANBAN_USER";
 
 export const sessionStorageUserRepository: IUserRepository = {
-	getDetails: async (): Promise<Result<UserModel>> => {
-		try {
-			const rawUser = sessionStorage.getItem(USER_STORAGE_KEY);
-			if (!rawUser) {
-				return Result.Error([
-					{
-						message: "No user found in session storage",
-						code: "UserNotFound",
-					},
-				]);
-			}
+	getDetails: async (): Promise<Result<UserModel>> => await loadPersistedUser(),
 
-			const persistedUser = JSON.parse(rawUser) as UserModel;
-			const userMapper = User({
-				email: persistedUser?.email,
-				theme: persistedUser?.theme,
-				id: persistedUser?.id,
-				sessionType: persistedUser?.sessionType,
-			});
+	update: async (userData: UserModel): Promise<Result<UserModel>> => {
+		const currentUser = await loadPersistedUser();
+		if (!currentUser.isSuccess) return Result.Error(currentUser.errors);
 
-			if (userMapper.isSuccess) return Result.Success(userMapper.value);
-
-			return Result.Error([...userMapper.errors]);
-		} catch (error) {
-			return Result.Error([
-				{
-					message: "Unexpected error",
-					code: "UnexpectedError",
-					details: error,
-				},
-			]);
-		}
-	},
-
-	save: async (userData: UserModel): Promise<Result<UserModel>> => {
-		const rawUser = sessionStorage.getItem(USER_STORAGE_KEY);
-		if (rawUser) {
-			try {
-				const persistedUser = JSON.parse(rawUser) as UserModel;
-				const userMapper = User({
-					...persistedUser,
-					theme: userData.theme ?? persistedUser.theme,
-					id: persistedUser.id,
-					sessionType: SESSION_TYPES.DEMO,
-				});
-
-				if (userMapper.isSuccess) return Result.Success(userMapper.value);
-				return Result.Error([...userMapper.errors]);
-			} catch (error) {
-				return Result.Error([
-					{
-						message: "Unexpected error",
-						code: "UnexpectedError",
-						details: error,
-					},
-				]);
-			}
-		}
-
-		const newUser = User({
-			email: null,
-			theme: userData.theme,
-			sessionType: SESSION_TYPES.DEMO,
+		const updatedUser = User({
+			id: currentUser.value.id,
+			sessionType: USER_SESSION_TYPES.DEMO,
+			email: currentUser.value.email,
+			theme: userData.theme ?? currentUser.value.theme,
 		});
-		if (!newUser.isSuccess) return Result.Error([...newUser.errors]);
 
-		sessionStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser.value));
-		return Result.Success(newUser.value);
+		if (updatedUser.isSuccess)
+			sessionStorage.setItem(
+				USER_STORAGE_KEY,
+				JSON.stringify(updatedUser.value),
+			);
+
+		return updatedUser;
 	},
+};
+
+const userSessionStorageSchema = z.object({
+	id: z.string(),
+	email: z.null(),
+	theme: z.enum(Object.values(USER_THEME_TYPES)),
+	sessionType: z.literal(USER_SESSION_TYPES.DEMO),
+});
+
+type UserSessionStorage = z.infer<typeof userSessionStorageSchema>;
+
+const loadPersistedUser = async (): Promise<Result<UserModel>> => {
+	const persistedUser = parseData<UserSessionStorage>(
+		sessionStorage.getItem(USER_STORAGE_KEY) as string,
+	);
+	if (!persistedUser)
+		return Result.Error([
+			userRepositoryErrors.dataNotFound(USER_STORAGE_KEY, "SESSION"),
+		]);
+
+	const validation =
+		await userSessionStorageSchema.safeParseAsync(persistedUser);
+
+	if (!validation.success)
+		return Result.Error([
+			userRepositoryErrors.corruptedData(USER_STORAGE_KEY, "SESSION"),
+		]);
+
+	return User({
+		id: persistedUser.id,
+		email: persistedUser.email,
+		theme: persistedUser.theme,
+		sessionType: persistedUser.sessionType,
+	});
 };

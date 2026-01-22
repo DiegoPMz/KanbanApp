@@ -1,65 +1,57 @@
 import { httpClient } from "@/shared/api/api.client";
+import { HttpClientErrorResponse } from "@/shared/api/http-error.interceptor";
 import { Result } from "@/shared/lib/result";
-import { userIdErrors, userThemeErrors } from "../domain/user.errors";
-import { SESSION_TYPES, UserModel } from "../domain/user.model";
+import { HttpStatusCode } from "axios";
+import {
+	userRepositoryErrors,
+	userValidationErrors,
+} from "../domain/user.errors";
+import { USER_SESSION_TYPES, UserModel } from "../domain/user.model";
 import { IUserRepository } from "../domain/user.repository";
 import { User } from "./../domain/user.model";
 
-interface UserEntity {
+interface UserApiDto {
 	id: string;
 	email: string;
 	appTheme: UserModel["theme"];
 }
 
 export const apiUserRepository: IUserRepository = {
-	getDetails: async (): Promise<Result<UserModel>> => {
-		try {
-			const { data } = await httpClient.get<UserEntity>("/user/details");
-			const mappedUser = User({
-				id: data.id,
-				email: data.email,
-				theme: data.appTheme,
-				sessionType: SESSION_TYPES.REGISTER,
-			});
+	getDetails: (): Promise<Result<UserModel>> =>
+		httpClient
+			.get<UserApiDto>("/user")
+			.then((response) => toUser(response.data))
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpUserErrorToResult(error, {} as UserModel),
+			),
 
-			if (mappedUser.isSuccess) return Result.Success(mappedUser.value);
+	update: (userData: UserModel): Promise<Result<UserModel>> =>
+		httpClient
+			.patch<UserApiDto>(`/user/theme/${userData.theme}`)
+			.then((res) => toUser(res.data))
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpUserErrorToResult(error, userData),
+			),
+};
 
-			return Result.Error([...mappedUser.errors]);
-		} catch (error) {
-			return Result.Error([
-				{
-					message: "Unexpected error",
-					code: "UnexpectedError",
-					details: error,
-				},
-			]);
-		}
-	},
+const toUser = (dto: UserApiDto): Result<UserModel> =>
+	User({
+		id: dto.id,
+		email: dto.email,
+		theme: dto.appTheme,
+		sessionType: USER_SESSION_TYPES.REGISTER,
+	});
 
-	save: async (userData: UserModel): Promise<Result<UserModel>> => {
-		if (!userData.id || !userData.theme)
-			return Result.Error([
-				{
-					code: userIdErrors.code,
-					message: userIdErrors.messages.registeredWithoutId,
-				},
-				{
-					code: userThemeErrors.code,
-					message: userThemeErrors.messages.empty,
-				},
-			]);
+const mapHttpUserErrorToResult = <R = UserModel>(
+	error: HttpClientErrorResponse,
+	model: UserModel,
+): Result<R> => {
+	const statusCode = error.response?.status;
 
-		try {
-			await httpClient.put<string>(`/user/theme/${userData.theme}`);
-			return Result.Success(userData);
-		} catch (error) {
-			return Result.Error([
-				{
-					message: "Unexpected error",
-					code: "UnexpectedError",
-					details: error,
-				},
-			]);
-		}
-	},
+	if (statusCode === HttpStatusCode.BadRequest)
+		return Result.Error([
+			userValidationErrors.invalidTheme(model?.id ?? "UNDEFINED", model.theme),
+		]);
+
+	return Result.Error([userRepositoryErrors.dataNotFound("UNDEFINED", "api")]);
 };
