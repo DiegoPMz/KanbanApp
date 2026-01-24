@@ -15,7 +15,7 @@ export interface TaskStateModel {
 	description: string;
 	isCompleted: boolean;
 	position: number;
-	priority: string;
+	priority: TaskModel["priority"];
 	subtaskIds: string[];
 }
 
@@ -102,5 +102,5 @@ const toTaskState = (model: TaskModel): TaskStateModel => ({
 	isCompleted: model.isCompleted,
 	position: model.position,
 	priority: model.priority,
-	subtaskIds: model.subtasks.map((st) => st.id),
+	subtaskIds: model.subtaskIds,
 });

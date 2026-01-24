@@ -1,86 +1,73 @@
 import { Result } from "@/shared/domain/result";
 import { reorderAndResequence } from "@/shared/domain/utils/reorder.utils";
-import { safeJsonParse } from "@/shared/infra/utils/json.utils";
+import {
+	sessionDb,
+	sessionDbKeys,
+} from "@/shared/infra/persistence/session-storage.db";
 import z from "zod";
 import {
 	taskPersistenceErrors,
 	taskValidationError,
 } from "../domain/task.errors";
-import { Task, TaskModel } from "../domain/task.model";
+import { TaskModel } from "../domain/task.model";
 import { ITaskRepository } from "../domain/task.repository";
 
 export const TASKS_STORAGE_KEY = "DEMO_KANBAN_TASKS";
 
 export const sessionStorageTaskRepository: ITaskRepository = {
-	findById: async (columnId: TaskModel["id"]): Promise<Result<TaskModel>> => {
-		const currentTasks = await loadPersistedTasks();
-		if (!currentTasks.isSuccess) return Result.Error(currentTasks.errors);
+	findById: async (taskId: TaskModel["id"]): Promise<Result<TaskModel>> => {
+		const { isSuccess, value, errors } = await loadPersistedTasks();
+		if (!isSuccess) return Result.Error(errors);
 
-		const foundedTask = currentTasks.value.find((t) => t.id === columnId);
-		return !foundedTask ? Result.Error([]) : Result.Success(foundedTask);
+		const foundedTask = value.find((t) => t.id === taskId);
+		return foundedTask
+			? Result.Success(foundedTask)
+			: Result.Error([taskPersistenceErrors.notFound(taskId)]);
 	},
 
 	create: async (data: TaskModel) => {
-		const currentTasks = await loadPersistedTasks();
-		if (!currentTasks.isSuccess) return Result.Error(currentTasks.errors);
+		const { isSuccess, value, errors } = await loadPersistedTasks();
+		if (!isSuccess) return Result.Error(errors);
 
-		const entitiesToPersist = toTaskStorage([...currentTasks.value, data]);
-		sessionStorage.setItem(
-			TASKS_STORAGE_KEY,
-			JSON.stringify(entitiesToPersist),
-		);
+		sessionDb.tasks.save([...value, data]);
+		return Result.Success(data);
+	},
+
+	update: async (data: TaskModel): Promise<Result<TaskModel>> => {
+		const { isSuccess, value, errors } = await loadPersistedTasks();
+		if (!isSuccess) return Result.Error(errors);
+
+		const taskFoundedIndex = value.findIndex((t) => t.id === data.id);
+		if (!taskFoundedIndex)
+			return Result.Error([taskPersistenceErrors.notFound(data.id)]);
+
+		value[taskFoundedIndex] = data;
+		sessionDb.tasks.save(value);
 
 		return Result.Success(data);
 	},
 
-	update: async (data: TaskModel) => {
-		const currentTasks = await loadPersistedTasks();
-		if (!currentTasks.isSuccess) return Result.Error(currentTasks.errors);
+	delete: async (data: TaskModel): Promise<Result<string>> => {
+		const { isSuccess, value, errors } = await loadPersistedTasks();
+		if (!isSuccess) return Result.Error(errors);
 
-		const updatedTask = currentTasks.value.find((t) => t.id === data.id);
-		if (!updatedTask)
-			return Result.Error([taskPersistenceErrors.notFound(data.id)]);
-
-		const updatedTasks = currentTasks.value.map((t) =>
-			t.id === data.id ? { ...data } : t,
-		);
-
-		const entitiesToPersist = toTaskStorage(updatedTasks);
-		sessionStorage.setItem(
-			TASKS_STORAGE_KEY,
-			JSON.stringify(entitiesToPersist),
-		);
-
-		return Result.Success(updatedTask);
-	},
-
-	delete: async (data: TaskModel) => {
-		const currentTasks = await loadPersistedTasks();
-		if (!currentTasks.isSuccess) return Result.Error(currentTasks.errors);
-
-		const taskToDelete = currentTasks.value.find((t) => t.id === data.id);
+		const taskToDelete = value.find((t) => t.id === data.id);
 		if (!taskToDelete)
 			return Result.Error([taskPersistenceErrors.notFound(data.id)]);
 
-		const updatedTasks = currentTasks.value.filter((t) => t.id !== data.id);
-
-		const entitiesToPersist = toTaskStorage(updatedTasks);
-		sessionStorage.setItem(
-			TASKS_STORAGE_KEY,
-			JSON.stringify(entitiesToPersist),
-		);
+		const taskUpdated = value.filter((t) => t.id !== taskToDelete.id);
+		sessionDb.tasks.save(taskUpdated);
 
 		return Result.Success("Task deleted successfully");
 	},
 
-	reorder: async (data: TaskModel) => {
-		const currentTasks = await loadPersistedTasks();
-		if (!currentTasks.isSuccess) return Result.Error(currentTasks.errors);
+	reorder: async (data: TaskModel): Promise<Result<TaskModel[]>> => {
+		const { isSuccess, value, errors } = await loadPersistedTasks();
+		if (!isSuccess) return Result.Error(errors);
 
-		const tasksByColumnId = currentTasks.value.filter(
-			(c) => c.columnId === data.columnId,
-		);
+		const tasksByColumnId = value.filter((c) => c.columnId === data.columnId);
 		const taskFounded = tasksByColumnId.find((t) => t.id === data.id);
+
 		if (!taskFounded)
 			return Result.Error([taskPersistenceErrors.notFound(data.id)]);
 
@@ -95,78 +82,39 @@ export const sessionStorageTaskRepository: ITaskRepository = {
 			);
 
 		const reorderedTasks = reorderAndResequence(tasksByColumnId, taskFounded);
-		const entitiesToPersist = toTaskStorage(reorderedTasks);
-		sessionStorage.setItem(
-			TASKS_STORAGE_KEY,
-			JSON.stringify(entitiesToPersist),
-		);
+		sessionDb.tasks.save(reorderedTasks);
 
 		return Result.Success(reorderedTasks);
 	},
 };
 
-const taskSessionStorageSchema = z.object({
-	columnId: z.string(),
-	id: z.string(),
-	title: z.string(),
-	description: z.string(),
-	isCompleted: z.boolean(),
-	position: z.number().min(0),
-	priority: z.enum(["low", "medium", "high"]),
-	subTaskIds: z.array(z.string()),
-});
+const taskListSessionStorageSchema: z.ZodType<TaskModel[]> = z.array(
+	z.object({
+		columnId: z.string(),
+		id: z.string(),
+		title: z.string(),
+		description: z.string(),
+		isCompleted: z.boolean(),
+		position: z.number().min(0),
+		priority: z.enum(["low", "medium", "high"]),
+		subtaskIds: z.array(z.string()),
+	}),
+);
 
-type TaskSessionStorage = z.infer<typeof taskSessionStorageSchema>;
-const taskListSessionStorageSchema = z.array(taskSessionStorageSchema);
+const loadPersistedTasks = async (): Promise<Result<TaskModel[]>> => {
+	const persistedTasks = sessionDb.tasks.get();
 
-export const loadPersistedTasks = async (): Promise<Result<TaskModel[]>> => {
-	const persistedData = safeJsonParse<TaskSessionStorage[]>(
-		sessionStorage.getItem(TASKS_STORAGE_KEY) as string,
-	);
-	if (!persistedData)
+	if (!persistedTasks)
 		return Result.Error([
-			taskPersistenceErrors.dataNotFound(TASKS_STORAGE_KEY, "SESSION"),
+			taskPersistenceErrors.dataNotFound(sessionDbKeys.tasks, "SESSION"),
 		]);
 
 	const validation =
-		await taskListSessionStorageSchema.safeParseAsync(persistedData);
-	if (!validation.success)
-		return Result.Error([
-			taskPersistenceErrors.corruptedData(TASKS_STORAGE_KEY, "SESSION"),
-		]);
+		await taskListSessionStorageSchema.safeParseAsync(persistedTasks);
 
-	const toTasks: TaskModel[] = [];
-
-	for (const data of validation.data) {
-		const taskResult = Task({
-			columnId: data.columnId,
-			id: data.id ?? crypto.randomUUID(),
-			title: data.title,
-			description: data.description,
-			isCompleted: data.isCompleted,
-			position: data.position,
-			priority: data.priority,
-			subtaskIds: data.subTaskIds,
-		});
-
-		if (!taskResult.isSuccess) {
-			console.error(`invalid Task`);
-			continue;
-		}
-
-		toTasks.push(taskResult.value);
-	}
-	return Result.Success(toTasks);
+	return validation.success
+		? Result.Success(validation.data)
+		: Result.Error([
+				taskPersistenceErrors.corruptedData(sessionDbKeys.tasks, "SESSION"),
+			]);
 };
-
-const toTaskStorage = (columns: TaskModel[]): TaskSessionStorage[] =>
-	columns.map((t: TaskModel) => ({
-		columnId: t.columnId,
-		id: t.id,
-		title: t.title,
-		description: t.description,
-		isCompleted: t.isCompleted,
-		position: t.position,
-		priority: t.priority,
-		subTaskIds: t.subtaskIds,
-	}));

@@ -1,4 +1,5 @@
 import { Result } from "@/shared/domain/result";
+import { sessionDb } from "@/shared/infra/persistence/session-storage.db";
 import { IUserCreator } from "../application/user.creator";
 import {
 	User,
@@ -16,9 +17,7 @@ export const sessionStorageUserCreator: IUserCreator = {
 			email: null,
 		});
 
-		if (demoUser.isSuccess)
-			sessionStorage.setItem("USER_APP_DEMO", JSON.stringify(demoUser.value));
-
+		if (demoUser.isSuccess) sessionDb.user.save(demoUser.value);
 		return Promise.resolve(demoUser);
 	},
 };

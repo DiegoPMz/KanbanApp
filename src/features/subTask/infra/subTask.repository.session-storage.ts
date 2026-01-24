@@ -1,155 +1,98 @@
 import { Result } from "@/shared/domain/result";
-import { safeJsonParse } from "@/shared/infra/utils/json.utils";
+import {
+	sessionDb,
+	sessionDbKeys,
+} from "@/shared/infra/persistence/session-storage.db";
 import z from "zod";
-import { subTaskPersistenceErrors } from "../domain/subTask.errors";
-import { SubTask, SubTaskModel } from "../domain/subTask.model";
+import { SubTaskModel } from "../domain/subTask.model";
 import { ISubTaskRepository } from "../domain/subTask.repository";
-
-export const SUBTASKS_STORAGE_KEY = "DEMO_KANBAN_SUBTASKS";
+import { subTaskPersistenceErrors } from "./../domain/subTask.errors";
 
 export const sessionStorageSubTaskRepository: ISubTaskRepository = {
 	findById: async (
 		columnId: SubTaskModel["id"],
 	): Promise<Result<SubTaskModel>> => {
-		const currentSubTasks = await loadPersistedSubTasks();
-		if (!currentSubTasks.isSuccess) return Result.Error(currentSubTasks.errors);
+		const { isSuccess, value, errors } = await loadPersistedSubTasks();
+		if (!isSuccess) return Result.Error(errors);
 
-		const foundSubTask = currentSubTasks.value.find(
-			(subTask) => subTask.id === columnId,
-		);
-		if (!foundSubTask) {
-			return Result.Error([
-				subTaskPersistenceErrors.dataNotFound(columnId, "SESSION"),
-			]);
-		}
-
-		return Result.Success(foundSubTask);
+		const subTaskFounded = value.find((subTask) => subTask.id === columnId);
+		return subTaskFounded
+			? Result.Success(subTaskFounded)
+			: Result.Error([
+					subTaskPersistenceErrors.dataNotFound(columnId, "SESSION"),
+				]);
 	},
 
 	create: async (data: SubTaskModel): Promise<Result<SubTaskModel>> => {
-		const currentSubTasks = await loadPersistedSubTasks();
-		if (!currentSubTasks.isSuccess) return Result.Error(currentSubTasks.errors);
+		const { isSuccess, value, errors } = await loadPersistedSubTasks();
+		if (!isSuccess) return Result.Error(errors);
 
-		const updatedSubTasks = [...currentSubTasks.value, data];
-		sessionStorage.setItem(
-			SUBTASKS_STORAGE_KEY,
-			JSON.stringify(updatedSubTasks.map((s) => toSubTaskStorage(s))),
-		);
-
+		sessionDb.subtasks.save([...value, data]);
 		return Result.Success(data);
 	},
 
 	update: async (data: SubTaskModel): Promise<Result<SubTaskModel>> => {
-		const currentSubTasks = await loadPersistedSubTasks();
-		if (!currentSubTasks.isSuccess) return Result.Error(currentSubTasks.errors);
+		const { isSuccess, value, errors } = await loadPersistedSubTasks();
+		if (!isSuccess) return Result.Error(errors);
 
-		const foundSubTask = currentSubTasks.value.find(
+		const subTaskFoundedId = value.findIndex(
 			(subTask) => subTask.id === data.id,
 		);
-		if (!foundSubTask) {
+		if (subTaskFoundedId === -1) {
 			return Result.Error([
 				subTaskPersistenceErrors.dataNotFound(data.id, "SESSION"),
 			]);
 		}
 
-		const updatedSubTasks = currentSubTasks.value.map((subTask) =>
-			subTask.id === data.id
-				? {
-						...subTask,
-						description: data.description,
-						isCompleted: data.isCompleted,
-					}
-				: subTask,
-		);
-		sessionStorage.setItem(
-			SUBTASKS_STORAGE_KEY,
-			JSON.stringify(updatedSubTasks.map((s) => toSubTaskStorage(s))),
-		);
+		value[subTaskFoundedId] = data;
+		sessionDb.subtasks.save(value);
 
 		return Result.Success(data);
 	},
 
 	delete: async (data: SubTaskModel): Promise<Result<string>> => {
-		const currentSubTasks = await loadPersistedSubTasks();
-		if (!currentSubTasks.isSuccess) return Result.Error(currentSubTasks.errors);
+		const { isSuccess, value, errors } = await loadPersistedSubTasks();
+		if (!isSuccess) return Result.Error(errors);
 
-		const foundSubTask = currentSubTasks.value.find(
-			(subTask) => subTask.id === data.id,
-		);
-		if (!foundSubTask) {
+		const subTaskFounded = value.find((subTask) => subTask.id === data.id);
+		if (!subTaskFounded) {
 			return Result.Error([
 				subTaskPersistenceErrors.dataNotFound(data.id, "SESSION"),
 			]);
 		}
-		const updatedSubTasks = currentSubTasks.value.filter(
-			(subTask) => subTask.id !== data.id,
-		);
-		sessionStorage.setItem(
-			SUBTASKS_STORAGE_KEY,
-			JSON.stringify(updatedSubTasks.map((s) => toSubTaskStorage(s))),
-		);
+		const subTasksUpdated = value.filter((subTask) => subTask.id !== data.id);
+		sessionDb.subtasks.save(subTasksUpdated);
 
 		return Result.Success("SubTask deleted successfully");
 	},
 };
 
-const subTaskSessionStorageSchema = z.object({
-	id: z.string(),
-	taskId: z.string(),
-	description: z.string().max(500),
-	isCompleted: z.boolean(),
-});
+const subTaskListSessionStorageSchema: z.ZodType<SubTaskModel[]> = z.array(
+	z.object({
+		id: z.string(),
+		taskId: z.string(),
+		description: z.string().max(500),
+		isCompleted: z.boolean(),
+	}),
+);
 
-const subTaskListSessionStorageSchema = z.array(subTaskSessionStorageSchema);
-type SubTaskSessionStorage = z.infer<typeof subTaskSessionStorageSchema>;
+const loadPersistedSubTasks = async (): Promise<Result<SubTaskModel[]>> => {
+	const persistedSubTasks = sessionDb.subtasks.get();
 
-export const loadPersistedSubTasks = async (): Promise<
-	Result<SubTaskModel[]>
-> => {
-	const persistedData = safeJsonParse<SubTaskSessionStorage[]>(
-		sessionStorage.getItem(SUBTASKS_STORAGE_KEY) as string,
-	);
-	if (!persistedData)
+	if (!persistedSubTasks)
 		return Result.Error([
-			subTaskPersistenceErrors.dataNotFound(SUBTASKS_STORAGE_KEY, "SESSION"),
+			subTaskPersistenceErrors.dataNotFound(sessionDbKeys.subtasks, "SESSION"),
 		]);
 
 	const validation =
-		await subTaskListSessionStorageSchema.safeParseAsync(persistedData);
+		await subTaskListSessionStorageSchema.safeParseAsync(persistedSubTasks);
 
-	if (!validation.success)
-		return Result.Error([
-			subTaskPersistenceErrors.corruptedData(
-				SUBTASKS_STORAGE_KEY,
-				"The subTask data does not match the expected format.",
-			),
-		]);
-
-	const toSubTasks: SubTaskModel[] = [];
-
-	for (const data of validation.data) {
-		const subTaskResult = SubTask({
-			taskId: data.taskId,
-			description: data.description,
-			isCompleted: data.isCompleted,
-		});
-
-		if (!subTaskResult.isSuccess) {
-			console.error(`invalid subTask`);
-			continue;
-		}
-
-		toSubTasks.push(subTaskResult.value);
-	}
-
-	return Result.Success(toSubTasks);
-};
-
-export const toSubTaskStorage = (model: SubTaskModel) => {
-	return {
-		id: model.id,
-		taskId: model.taskId,
-		description: model.description,
-		isCompleted: model.isCompleted,
-	};
+	return validation.success
+		? Result.Success(validation.data)
+		: Result.Error([
+				subTaskPersistenceErrors.corruptedData(
+					sessionDbKeys.subtasks,
+					"SESSION",
+				),
+			]);
 };
