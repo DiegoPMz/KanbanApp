@@ -7,5 +7,3 @@ export * from "./domain/task.model";
 export * from "./domain/task.repository";
 export * from "./infra/task.repository.api";
 export * from "./infra/task.repository.session-storage";
-export * from "./infra/task.repository.state";
-export * from "./store/task.store";

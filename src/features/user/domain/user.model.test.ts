@@ -1,8 +1,17 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { userBusinessErrors, userValidationErrors } from "./user.errors";
 import { User, UserModel } from "./user.model";
 
 describe("-------> UserModel", () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date("2026-02-06T08:00:00Z"));
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	test("Should return an error 'userValidationErrors.invalidSessionType' if the sessionType value is invalid", () => {
 		const invalidSessionType =
 			"INVALID_SESSION_TYPE" as UserModel["sessionType"];

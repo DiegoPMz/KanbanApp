@@ -1,5 +1,5 @@
 import { Result } from "@/shared/domain/result";
-import { subTaskValidationError } from "./subTask.errors";
+import { subTaskValidationErrors } from "./subTask.errors";
 
 export interface SubTaskModel {
 	id: string;
@@ -14,23 +14,24 @@ type SubTaskInput = Omit<SubTaskModel, "id"> & {
 
 export const SubTask = (data: SubTaskInput): Result<SubTaskModel> => {
 	if (!data.taskId)
-		return Result.Error([
-			subTaskValidationError.invalidTaskId(data.id ?? "undefined"),
+		return Result.Failure([
+			subTaskValidationErrors.invalidTaskId(data.taskId, data.id),
 		]);
 
 	if (!data.description)
-		return Result.Error([
-			subTaskValidationError.emptyDescription(data.id ?? "undefined"),
-		]);
+		return Result.Failure([subTaskValidationErrors.emptyDescription(data.id)]);
 
 	if (data.description.length > 500)
-		return Result.Error([
-			subTaskValidationError.tooLongDescription(data.id ?? "undefined"),
+		return Result.Failure([
+			subTaskValidationErrors.tooLongDescription(
+				data.description.length,
+				data.id,
+			),
 		]);
 
 	if (typeof data.isCompleted !== "boolean") {
-		return Result.Error([
-			subTaskValidationError.invalidIsCompleted(data.id ?? "undefined"),
+		return Result.Failure([
+			subTaskValidationErrors.invalidIsCompleted(data.id),
 		]);
 	}
 

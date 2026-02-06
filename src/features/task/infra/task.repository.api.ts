@@ -1,10 +1,10 @@
-import { AppError, Result } from "@/shared/domain/result";
+import { ResultError, Result } from "@/shared/domain/result";
 import { HttpClientErrorResponse } from "@/shared/infra/http/axios-error.interceptor";
 import { httpClient } from "@/shared/infra/http/http.client";
 import { AxiosResponse, HttpStatusCode } from "axios";
 import {
 	taskPersistenceErrors,
-	taskValidationError,
+	taskValidationErrors,
 } from "../domain/task.errors";
 import { Task } from "../domain/task.model";
 import { ITaskRepository } from "../domain/task.repository";
@@ -123,39 +123,45 @@ const mapHttpTaskErrorToResult = <R = TaskModel>(
 	const responseData = error.response?.data;
 
 	if (statusCode === HttpStatusCode.NotFound) {
-		return Result.Error([taskPersistenceErrors.notFound(model.id)]);
+		return Result.Failure([taskPersistenceErrors.notFound(model.id)]);
 	}
 
 	if (statusCode === HttpStatusCode.BadRequest && responseData?.errors) {
-		const validationErrors: AppError[] = [];
+		const validationErrors: ResultError[] = [];
 		const fields = responseData.errors;
 
 		if (fields.title)
-			validationErrors.push(taskValidationError.tooLongTitle(model.id));
+			validationErrors.push(
+				taskValidationErrors.tooLongTitle(model.title.length, model.id),
+			);
 
 		if (fields.priority)
 			validationErrors.push(
-				taskValidationError.invalidPriority(model.id, model.priority),
+				taskValidationErrors.invalidPriority(model.priority, model.id),
 			);
 
 		if (fields.position)
 			validationErrors.push(
-				taskValidationError.negativePosition(model.id, model.position),
+				taskValidationErrors.negativePosition(model.position, model.id),
 			);
 
 		if (fields.columnId)
-			validationErrors.push(taskValidationError.invalidColumnId(model.id));
+			validationErrors.push(
+				taskValidationErrors.invalidColumnId(model.columnId, model.id),
+			);
 
 		if (fields.id)
-			validationErrors.push(taskValidationError.invalidId(model.id));
+			validationErrors.push(taskValidationErrors.invalidId(model.id));
 
 		if (fields.isCompleted !== undefined)
 			validationErrors.push(
-				taskValidationError.invalidCompletionStatus(model.id),
+				taskValidationErrors.invalidCompletionStatus(model.id),
 			);
 
-		if (validationErrors.length > 0) return Result.Error(validationErrors);
+		if (validationErrors.length > 0) return Result.Failure(validationErrors);
 	}
 
-	return Result.Error([taskPersistenceErrors.dataNotFound("UNDEFINED", "api")]);
+	return Result.Failure([
+		taskPersistenceErrors.dataNotFound("/boardTasks", "api"),
+	]);
 };

@@ -12,7 +12,7 @@ export const reorderColumn = (columnRepository: IColumnRepository) => {
 		handle: async (data: ReorderColumnDto): Promise<Result<ColumnModel[]>> => {
 			const columnFoundedResult = await columnRepository.findById(data.id);
 			if (!columnFoundedResult.isSuccess)
-				return Result.Error(columnFoundedResult.errors);
+				return Result.Failure(columnFoundedResult.errors);
 
 			const columnReorderedResult = Column({
 				...columnFoundedResult.value,
@@ -21,7 +21,7 @@ export const reorderColumn = (columnRepository: IColumnRepository) => {
 
 			return columnReorderedResult.isSuccess
 				? columnRepository.reorder(columnReorderedResult.value)
-				: Result.Error(columnReorderedResult.errors);
+				: Result.Failure(columnReorderedResult.errors);
 		},
 	};
 };

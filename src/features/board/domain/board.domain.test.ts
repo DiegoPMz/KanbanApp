@@ -1,40 +1,42 @@
-import { Result } from "@/shared/domain/result";
-import { describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { boardValidationErrors } from "../board.errors";
-import { Board } from "../board.model";
+import { boardValidationErrors } from "./board.errors";
+import { Board } from "./board.model";
 
 describe("feature:Board --> BoardModel", () => {
-	test("Should return an instance of 'Result' when attempting to create a Board (whether valid or invalid)", () => {
-		const mockBoard = Board({ id: undefined, name: "someName", columnIds: [] });
-		expect(mockBoard).instanceOf(Result);
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date("2026-02-06T08:00:00Z"));
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
 	});
 
 	test(`Should return the domain error 'boardValidationErrors.emptyName' when the Board name is null or undefined`, () => {
-		const mockedId = undefined;
 		const mockedName = undefined as unknown as string;
 
-		const mockBoard = Board({ name: mockedName, id: mockedId, columnIds: [] });
+		const mockBoard = Board({ name: mockedName, id: undefined, columnIds: [] });
 
-		expect(mockBoard.errors[0].code).toBe(
-			boardValidationErrors.emptyName(mockedId ?? "undefined").code,
-		);
+		expect(mockBoard.errors[0]).toEqual(boardValidationErrors.emptyName());
 	});
 
 	test(`Should return the domain error 'boardValidationErrors.tooLongName' when the Board name is too long`, () => {
-		const mockedId = undefined;
 		const mockedName = "a".repeat(101);
 
-		const mockBoard = Board({ name: mockedName, id: mockedId, columnIds: [] });
+		const mockBoard = Board({ name: mockedName, id: undefined, columnIds: [] });
 
-		expect(mockBoard.errors[0].code).toBe(
-			boardValidationErrors.tooLongName(mockedId ?? "undefined").code,
+		expect(mockBoard.errors[0]).toEqual(
+			boardValidationErrors.tooLongName(mockedName.length),
 		);
 	});
 
 	test("Should assign a new, truthy 'id' to the Board if the 'id' property provided is null or undefined", () => {
-		const mockedId = undefined;
-		const mockBoard = Board({ name: "Test name", id: mockedId, columnIds: [] });
+		const mockBoard = Board({
+			name: "Test name",
+			id: undefined,
+			columnIds: [],
+		});
 
 		expect(mockBoard.value.id).toBeTruthy();
 	});
@@ -48,14 +50,16 @@ describe("feature:Board --> BoardModel", () => {
 
 	test(`Should return the domain error 'boardValidationErrors.invalidColumnIds' when the Board columns property is not an array`, () => {
 		const mockedColumns = undefined as unknown as [];
+		const mockedId = "Some Id";
+
 		const mockBoard = Board({
 			name: "Some name",
-			id: "Some Id",
+			id: mockedId,
 			columnIds: mockedColumns,
 		});
 
-		expect(mockBoard.errors[0].code).toBe(
-			boardValidationErrors.invalidColumnIds("Some Id").code,
+		expect(mockBoard.errors[0]).toEqual(
+			boardValidationErrors.invalidColumnIds(mockedId),
 		);
 	});
 });

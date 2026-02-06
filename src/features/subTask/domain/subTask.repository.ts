@@ -2,7 +2,7 @@ import { Result } from "@/shared/domain/result";
 import { SubTaskModel } from "./subTask.model";
 
 export interface ISubTaskRepository {
-	findById: (columnId: SubTaskModel["id"]) => Promise<Result<SubTaskModel>>;
+	findById: (subTaskId: SubTaskModel["id"]) => Promise<Result<SubTaskModel>>;
 	create: (data: SubTaskModel) => Promise<Result<SubTaskModel>>;
 	update: (data: SubTaskModel) => Promise<Result<SubTaskModel>>;
 	delete: (data: SubTaskModel) => Promise<Result<string>>;

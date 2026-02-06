@@ -9,5 +9,3 @@ export * from "./domain/board.model";
 export * from "./domain/board.repository";
 export * from "./infra/board.repository.api";
 export * from "./infra/board.repository.session-storage";
-export * from "./infra/board.repository.state";
-export * from "./store/board.store";

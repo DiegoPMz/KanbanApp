@@ -12,7 +12,7 @@ export const reorderTask = (taskRepository: ITaskRepository) => {
 		handle: async (data: ReorderTaskDto): Promise<Result<TaskModel[]>> => {
 			const taskFoundedResult = await taskRepository.findById(data.id);
 			if (!taskFoundedResult.isSuccess)
-				return Result.Error(taskFoundedResult.errors);
+				return Result.Failure(taskFoundedResult.errors);
 
 			const taskReorderedResult = Task({
 				...taskFoundedResult.value,
@@ -21,7 +21,7 @@ export const reorderTask = (taskRepository: ITaskRepository) => {
 
 			return taskReorderedResult.isSuccess
 				? taskRepository.reorder(taskReorderedResult.value)
-				: Result.Error(taskReorderedResult.errors);
+				: Result.Failure(taskReorderedResult.errors);
 		},
 	};
 };

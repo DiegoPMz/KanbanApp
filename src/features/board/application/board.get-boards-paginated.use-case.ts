@@ -12,7 +12,7 @@ export const getBoardsPaginated = (boardRepository: IBoardRepository) => {
 		handle: async (
 			data: GetBoardsPaginatedDto,
 		): Promise<Result<BoardModel[]>> => {
-			if (data.limit < 1) return Result.Error([]);
+			if (data.limit < 1) return Result.Failure([]);
 			return boardRepository.findPaginated(data.page, data.limit);
 		},
 	};

@@ -12,7 +12,7 @@ export const deleteBoard = (boardRepository: IBoardRepository) => {
 			const boardFoundedResult = await boardRepository.findById(data.id);
 
 			if (!boardFoundedResult.isSuccess)
-				return Result.Error(boardFoundedResult.errors);
+				return Result.Failure(boardFoundedResult.errors);
 
 			const boardDeletedResult = await boardRepository.delete({
 				...boardFoundedResult.value,
@@ -20,7 +20,7 @@ export const deleteBoard = (boardRepository: IBoardRepository) => {
 
 			return boardDeletedResult.isSuccess
 				? boardFoundedResult
-				: Result.Error(boardDeletedResult.errors);
+				: Result.Failure(boardDeletedResult.errors);
 		},
 	};
 };

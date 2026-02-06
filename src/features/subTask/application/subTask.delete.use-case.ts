@@ -18,7 +18,7 @@ export const deleteSubTask = (subTaskRepository: ISubTaskRepository) => {
 
 			return subTaskDeletedResult.isSuccess
 				? subTaskFoundedResult
-				: Result.Error(subTaskDeletedResult.errors);
+				: Result.Failure(subTaskDeletedResult.errors);
 		},
 	};
 };

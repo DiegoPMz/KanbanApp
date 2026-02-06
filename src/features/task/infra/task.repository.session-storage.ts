@@ -7,27 +7,25 @@ import {
 import z from "zod";
 import {
 	taskPersistenceErrors,
-	taskValidationError,
+	taskValidationErrors,
 } from "../domain/task.errors";
 import { TaskModel } from "../domain/task.model";
 import { ITaskRepository } from "../domain/task.repository";
 
-export const TASKS_STORAGE_KEY = "DEMO_KANBAN_TASKS";
-
 export const sessionStorageTaskRepository: ITaskRepository = {
 	findById: async (taskId: TaskModel["id"]): Promise<Result<TaskModel>> => {
 		const { isSuccess, value, errors } = await loadPersistedTasks();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		const foundedTask = value.find((t) => t.id === taskId);
 		return foundedTask
 			? Result.Success(foundedTask)
-			: Result.Error([taskPersistenceErrors.notFound(taskId)]);
+			: Result.Failure([taskPersistenceErrors.notFound(taskId)]);
 	},
 
 	create: async (data: TaskModel) => {
 		const { isSuccess, value, errors } = await loadPersistedTasks();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		sessionDb.tasks.save([...value, data]);
 		return Result.Success(data);
@@ -35,11 +33,11 @@ export const sessionStorageTaskRepository: ITaskRepository = {
 
 	update: async (data: TaskModel): Promise<Result<TaskModel>> => {
 		const { isSuccess, value, errors } = await loadPersistedTasks();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		const taskFoundedIndex = value.findIndex((t) => t.id === data.id);
 		if (!taskFoundedIndex)
-			return Result.Error([taskPersistenceErrors.notFound(data.id)]);
+			return Result.Failure([taskPersistenceErrors.notFound(data.id)]);
 
 		value[taskFoundedIndex] = data;
 		sessionDb.tasks.save(value);
@@ -49,11 +47,11 @@ export const sessionStorageTaskRepository: ITaskRepository = {
 
 	delete: async (data: TaskModel): Promise<Result<string>> => {
 		const { isSuccess, value, errors } = await loadPersistedTasks();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		const taskToDelete = value.find((t) => t.id === data.id);
 		if (!taskToDelete)
-			return Result.Error([taskPersistenceErrors.notFound(data.id)]);
+			return Result.Failure([taskPersistenceErrors.notFound(data.id)]);
 
 		const taskUpdated = value.filter((t) => t.id !== taskToDelete.id);
 		sessionDb.tasks.save(taskUpdated);
@@ -63,17 +61,17 @@ export const sessionStorageTaskRepository: ITaskRepository = {
 
 	reorder: async (data: TaskModel): Promise<Result<TaskModel[]>> => {
 		const { isSuccess, value, errors } = await loadPersistedTasks();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		const tasksByColumnId = value.filter((c) => c.columnId === data.columnId);
 		const taskFounded = tasksByColumnId.find((t) => t.id === data.id);
 
 		if (!taskFounded)
-			return Result.Error([taskPersistenceErrors.notFound(data.id)]);
+			return Result.Failure([taskPersistenceErrors.notFound(data.id)]);
 
 		if (data.position > tasksByColumnId.length)
-			return Result.Error([
-				taskValidationError.positionTooHigh(data.id, data.position),
+			return Result.Failure([
+				taskValidationErrors.positionTooHigh(data.position, data.id),
 			]);
 
 		if (taskFounded.position === data.position)
@@ -105,8 +103,11 @@ const loadPersistedTasks = async (): Promise<Result<TaskModel[]>> => {
 	const persistedTasks = sessionDb.tasks.get();
 
 	if (!persistedTasks)
-		return Result.Error([
-			taskPersistenceErrors.dataNotFound(sessionDbKeys.tasks, "SESSION"),
+		return Result.Failure([
+			taskPersistenceErrors.dataNotFound(
+				sessionDbKeys.tasks,
+				"SESSION_STORAGE",
+			),
 		]);
 
 	const validation =
@@ -114,7 +115,10 @@ const loadPersistedTasks = async (): Promise<Result<TaskModel[]>> => {
 
 	return validation.success
 		? Result.Success(validation.data)
-		: Result.Error([
-				taskPersistenceErrors.corruptedData(sessionDbKeys.tasks, "SESSION"),
+		: Result.Failure([
+				taskPersistenceErrors.corruptedData(
+					sessionDbKeys.tasks,
+					"SESSION_STORAGE",
+				),
 			]);
 };

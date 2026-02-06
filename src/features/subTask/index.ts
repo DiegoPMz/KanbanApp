@@ -6,4 +6,3 @@ export * from "./domain/subTask.model";
 export * from "./domain/subTask.repository";
 export * from "./infra/subTask.repository.api";
 export * from "./infra/subTask.repository.session-storage";
-export * from "./infra/subTask.repository.state";

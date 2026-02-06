@@ -1,4 +1,3 @@
-import { boardRepositoryErrors } from "@/features/board";
 import { Result } from "@/shared/domain/result";
 import { reorderAndResequence } from "@/shared/domain/utils/reorder.utils";
 import {
@@ -18,17 +17,17 @@ export const sessionStorageColumnRepository: IColumnRepository = {
 		columnId: ColumnModel["id"],
 	): Promise<Result<ColumnModel>> => {
 		const { isSuccess, value, errors } = await loadPersistedColumns();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		const foundedColumn = value.find((c) => c.id === columnId);
 		return !foundedColumn
-			? Result.Error([columnPersistenceErrors.notFound(columnId)])
+			? Result.Failure([columnPersistenceErrors.notFound(columnId)])
 			: Result.Success(foundedColumn);
 	},
 
 	create: async (data: ColumnModel): Promise<Result<ColumnModel>> => {
 		const { isSuccess, value, errors } = await loadPersistedColumns();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		sessionDb.columns.save([...value, data]);
 		return Result.Success(data);
@@ -36,11 +35,11 @@ export const sessionStorageColumnRepository: IColumnRepository = {
 
 	update: async (data: ColumnModel): Promise<Result<ColumnModel>> => {
 		const { isSuccess, value, errors } = await loadPersistedColumns();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		const columnIndex = value.findIndex((c) => c.id === data.id);
 		if (columnIndex === -1)
-			Result.Error([columnPersistenceErrors.notFound(data.id)]);
+			Result.Failure([columnPersistenceErrors.notFound(data.id)]);
 
 		value[columnIndex] = data;
 		sessionDb.columns.save(value);
@@ -50,10 +49,10 @@ export const sessionStorageColumnRepository: IColumnRepository = {
 
 	delete: async (data: ColumnModel): Promise<Result<string>> => {
 		const { isSuccess, value, errors } = await loadPersistedColumns();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		if (!value.find((c) => c.id === data.id))
-			return Result.Error([columnPersistenceErrors.notFound(data.id)]);
+			return Result.Failure([columnPersistenceErrors.notFound(data.id)]);
 
 		const updatedColumns = value.filter((b) => b.id !== data.id);
 		sessionDb.columns.save(updatedColumns);
@@ -63,17 +62,17 @@ export const sessionStorageColumnRepository: IColumnRepository = {
 
 	reorder: async (data: ColumnModel): Promise<Result<ColumnModel[]>> => {
 		const { isSuccess, value, errors } = await loadPersistedColumns();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		const columnsByBoardId = value.filter((c) => c.boardId === data.boardId);
 		const columnFounded = columnsByBoardId.find((c) => c.id === data.id);
 
 		if (!columnFounded)
-			return Result.Error([columnPersistenceErrors.notFound(data.id)]);
+			return Result.Failure([columnPersistenceErrors.notFound(data.id)]);
 
 		if (data.position > columnsByBoardId.length)
-			return Result.Error([
-				columnValidationErrors.positionTooHigh(data.id, data.position),
+			return Result.Failure([
+				columnValidationErrors.positionTooHigh(data.position, data.id),
 			]);
 
 		if (columnFounded.position === data.position)
@@ -104,8 +103,11 @@ const loadPersistedColumns = async (): Promise<Result<ColumnModel[]>> => {
 	const persistedColumns = sessionDb.columns.get();
 
 	if (!persistedColumns)
-		return Result.Error([
-			boardRepositoryErrors.dataNotFound(sessionDbKeys.columns, "SESSION"),
+		return Result.Failure([
+			columnPersistenceErrors.dataNotFound(
+				sessionDbKeys.columns,
+				"SESSION_STORAGE",
+			),
 		]);
 
 	const validation =
@@ -113,10 +115,10 @@ const loadPersistedColumns = async (): Promise<Result<ColumnModel[]>> => {
 
 	return validation.success
 		? Result.Success(validation.data)
-		: Result.Error([
-				boardRepositoryErrors.corruptedData(
+		: Result.Failure([
+				columnPersistenceErrors.corruptedData(
 					sessionDbKeys.columns,
-					"The column data does not match the expected format.",
+					"SESSION_STORAGE",
 				),
 			]);
 };

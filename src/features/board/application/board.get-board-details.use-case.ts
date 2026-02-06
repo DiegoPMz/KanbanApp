@@ -5,7 +5,7 @@ import { IBoardRepository } from "../domain/board.repository";
 export const getBoardDetails = (boardRepository: IBoardRepository) => {
 	return {
 		handle: async (id: string): Promise<Result<BoardFullDetailsModel>> => {
-			if (!id) return Result.Error([]);
+			if (!id) return Result.Failure([]);
 			return boardRepository.getBoardDetails(id);
 		},
 	};

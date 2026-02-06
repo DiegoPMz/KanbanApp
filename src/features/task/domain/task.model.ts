@@ -1,5 +1,5 @@
 import { Result } from "@/shared/domain/result";
-import { taskValidationError } from "./task.errors";
+import { taskValidationErrors } from "./task.errors";
 
 export const TASK_PRIORITIES = {
 	LOW: "low",
@@ -27,42 +27,35 @@ type TaskInput = Omit<TaskModel, "id"> & {
 
 export const Task = (data: TaskInput): Result<TaskModel> => {
 	if (!data.columnId)
-		return Result.Error([
-			taskValidationError.invalidColumnId(data.id ?? "NEW_TASK"),
+		return Result.Failure([
+			taskValidationErrors.invalidColumnId(data.columnId, data.id),
 		]);
 
 	if (!data.title)
-		return Result.Error([
-			taskValidationError.emptyTitle(data.id ?? "NEW_TASK"),
-		]);
+		return Result.Failure([taskValidationErrors.emptyTitle(data.id)]);
 
 	if (data.title.length > 200)
-		return Result.Error([
-			taskValidationError.tooLongTitle(data.id ?? "NEW_TASK"),
+		return Result.Failure([
+			taskValidationErrors.tooLongTitle(data.title.length, data.id),
 		]);
 
 	if (isNaN(data.position))
-		return Result.Error([
-			taskValidationError.invalidPosition(data.id ?? "NEW_TASK", data.position),
+		return Result.Failure([
+			taskValidationErrors.invalidPosition(data.position, data.id),
 		]);
 
 	if (data.position < 0)
-		return Result.Error([
-			taskValidationError.negativePosition(
-				data.id ?? "NEW_TASK",
-				data.position,
-			),
+		return Result.Failure([
+			taskValidationErrors.negativePosition(data.position, data.id),
 		]);
 
 	if (Object.values(TASK_PRIORITIES).indexOf(data.priority) === -1)
-		return Result.Error([
-			taskValidationError.invalidPriority(data.id ?? "NEW_TASK", data.priority),
+		return Result.Failure([
+			taskValidationErrors.invalidPriority(data.priority, data.id),
 		]);
 
 	if (!data.subtaskIds)
-		return Result.Error([
-			taskValidationError.invalidSubtaskIds(data.id ?? "NEW_TASK"),
-		]);
+		return Result.Failure([taskValidationErrors.invalidSubtaskIds(data.id)]);
 
 	return Result.Success({
 		columnId: data.columnId,

@@ -22,7 +22,7 @@ export const createColumn = (columnRepository: IColumnRepository) => {
 
 			return columnCreatedResult.isSuccess
 				? columnRepository.create(columnCreatedResult.value)
-				: Result.Error(columnCreatedResult.errors);
+				: Result.Failure(columnCreatedResult.errors);
 		},
 	};
 };

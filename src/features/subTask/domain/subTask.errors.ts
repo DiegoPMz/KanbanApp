@@ -1,55 +1,76 @@
-import { AppError } from "@/shared/domain/result";
+import { ResultError } from "@/shared/domain/result";
 
 /**
- * Errores de Dominio / Validación
- * Se disparan cuando la lógica de la entidad SubTask es violada.
+ * Domain / Validation Errors
+ * Triggered when the SubTask entity's business logic is violated.
  */
-export const subTaskValidationError = {
-	invalidTaskId: (id: string): AppError => ({
-		code: "SUBTASK_INVALID_TASK_ID",
-		message: `Invalid taskId for SubTask with id: ${id}`,
-		details: { id, date: new Date().toISOString() },
+export const subTaskValidationErrors = {
+	invalidTaskId: (taskId: string, id?: string): ResultError => ({
+		code: "SubTask.TaskIdInvalid",
+		message: `Invalid taskId: ${taskId}`,
+		type: "Validation",
+		metadata: { id, taskId, date: new Date().toISOString() },
 	}),
-	emptyDescription: (id: string): AppError => ({
-		code: "SUBTASK_EMPTY_DESCRIPTION",
-		message: `Description cannot be empty for SubTask with id: ${id}`,
-		details: { id, date: new Date().toISOString() },
+	emptyDescription: (id?: string): ResultError => ({
+		code: "SubTask.DescriptionEmpty",
+		message: "SubTask description cannot be empty.",
+		type: "Validation",
+		metadata: {
+			id,
+			field: "description",
+			date: new Date().toISOString(),
+		},
 	}),
-	tooLongDescription: (id: string): AppError => ({
-		code: "SUBTASK_TOO_LONG_DESCRIPTION",
-		message: `SubTask description cannot exceed 500 characters for SubTask with id: ${id}`,
-		details: { id, date: new Date().toISOString() },
+	tooLongDescription: (length: number, id?: string): ResultError => ({
+		code: "SubTask.DescriptionTooLong",
+		message: `SubTask description cannot exceed 500 characters. Current length: ${length}`,
+		type: "Validation",
+		metadata: {
+			id,
+			field: "description",
+			maxLength: 500,
+			date: new Date().toISOString(),
+		},
 	}),
-	invalidIsCompleted: (id: string): AppError => ({
-		code: "SUBTASK_INVALID_IS_COMPLETED",
-		message: `isCompleted must be a boolean for SubTask with id: ${id}`,
-		details: { id, date: new Date().toISOString() },
+	invalidIsCompleted: (id?: string): ResultError => ({
+		code: "SubTask.IsCompletedInvalid",
+		message: "isCompleted must be a boolean.",
+		type: "Validation",
+		metadata: {
+			id,
+			field: "isCompleted",
+			date: new Date().toISOString(),
+		},
 	}),
-	invalidId: (id: string): AppError => ({
-		code: "SUBTASK_INVALID_ID",
-		message: `Invalid id for SubTask: ${id}`,
-		details: { id, date: new Date().toISOString() },
+	invalidId: (id: string): ResultError => ({
+		code: "SubTask.IdInvalid",
+		message: `The provided ID '${id}' is not a valid UUID.`,
+		type: "Validation",
+		metadata: { id, date: new Date().toISOString() },
 	}),
 };
 
 /**
- * Errores de Persistencia / Repositorio
- * Se disparan cuando hay problemas al obtener o guardar los datos.
+ * Persistence / Repository Errors
+ * Triggered when issues occur while retrieving or saving data.
  */
 export const subTaskPersistenceErrors = {
-	notFound: (id: string): AppError => ({
-		code: "SUBTASK_NOT_FOUND",
+	notFound: (id: string): ResultError => ({
+		code: "SubTask.NotFound",
 		message: `SubTask not found with the id: ${id}`,
-		details: { id, date: new Date().toISOString() },
+		type: "Not_found",
+		metadata: { id, date: new Date().toISOString() },
 	}),
-	dataNotFound: (key: string, type?: string): AppError => ({
-		code: "SUBTASK_DATA_NOT_PERSISTED",
+	dataNotFound: (key: string, persistenceType?: string): ResultError => ({
+		code: "SubTask.DataNotPersisted",
 		message: `No data found for the key: ${key}`,
-		details: { type, key, date: new Date().toISOString() },
+		type: "Not_found",
+		metadata: { persistenceType, key, date: new Date().toISOString() },
 	}),
-	corruptedData: (key: string, reason: string, type?: string): AppError => ({
-		code: "SUBTASK_STORAGE_CORRUPTED",
+	corruptedData: (key: string, persistenceType?: string): ResultError => ({
+		code: "SubTask.StorageCorrupted",
 		message: `Data validation failed for the key: ${key}`,
-		details: { type, key, reason, date: new Date().toISOString() },
+		type: "Internal",
+		metadata: { persistenceType, key, date: new Date().toISOString() },
 	}),
 };

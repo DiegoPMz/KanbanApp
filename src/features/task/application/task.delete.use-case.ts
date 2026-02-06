@@ -18,7 +18,7 @@ export const deleteTask = (taskRepository: ITaskRepository) => {
 
 			return taskDeletedResult.isSuccess
 				? taskFoundedResult
-				: Result.Error(taskDeletedResult.errors);
+				: Result.Failure(taskDeletedResult.errors);
 		},
 	};
 };

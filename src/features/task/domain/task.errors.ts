@@ -1,80 +1,110 @@
-import { AppError } from "@/shared/domain/result";
+import { ResultError } from "@/shared/domain/result";
 
 /**
- * Errores de Dominio / Validación
- * Se disparan cuando la lógica de la entidad Task es violada.
+ * Domain / Validation Errors
+ * Triggered when the Task entity's business logic is violated.
  */
-export const taskValidationError = {
-	emptyTitle: (id: string): AppError => ({
-		code: "TASK_TITLE_EMPTY",
+export const taskValidationErrors = {
+	emptyTitle: (id?: string): ResultError => ({
+		code: "Task.TitleEmpty",
 		message: "Task title cannot be empty.",
-		details: { id, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: {
+			id,
+			field: "title",
+			date: new Date().toISOString(),
+		},
 	}),
-	tooLongTitle: (id: string): AppError => ({
-		code: "TASK_TITLE_TOO_LONG",
-		message: "Task title cannot exceed 200 characters.",
-		details: { id, date: new Date().toISOString() },
+	tooLongTitle: (length: number, id?: string): ResultError => ({
+		code: "Task.TitleTooLong",
+		message: `Task title cannot exceed 200 characters. Current length: ${length}`,
+		type: "Validation",
+		metadata: {
+			id,
+			field: "title",
+			maxLength: 200,
+			date: new Date().toISOString(),
+		},
 	}),
-	invalidPriority: (id: string, priority: string): AppError => ({
-		code: "TASK_PRIORITY_INVALID",
+	invalidPriority: (priority: string, id?: string): ResultError => ({
+		code: "Task.PriorityInvalid",
 		message: "Task priority must be one of: low, medium, high.",
-		details: { id, priority, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { id, priority, date: new Date().toISOString() },
 	}),
-	negativePosition: (id: string, position: number): AppError => ({
-		code: "TASK_POSITION_NEGATIVE",
+	negativePosition: (position: number, id?: string): ResultError => ({
+		code: "Task.PositionNegative",
 		message: "Task position cannot be negative.",
-		details: { id, position, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { id, position, date: new Date().toISOString() },
 	}),
-	invalidPosition: (id: string, position: number): AppError => ({
-		code: "TASK_POSITION_INVALID",
+	invalidPosition: (position: number, id?: string): ResultError => ({
+		code: "Task.PositionInvalid",
 		message: "Task position must be a valid number.",
-		details: { id, position, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { id, position, date: new Date().toISOString() },
 	}),
-	positionTooHigh: (id: string, position: number): AppError => ({
-		code: "TASK_POSITION_TOO_HIGH",
+	positionTooHigh: (position: number, id?: string): ResultError => ({
+		code: "Task.PositionTooHigh",
 		message: "Task position is higher than allowed.",
-		details: { id, position, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { id, position, date: new Date().toISOString() },
 	}),
-	invalidId: (id: string): AppError => ({
-		code: "TASK_ID_INVALID",
+	invalidId: (id: string): ResultError => ({
+		code: "Task.IdInvalid",
 		message: "Task ID must be valid.",
-		details: { id, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { id, date: new Date().toISOString() },
 	}),
-	invalidColumnId: (id: string): AppError => ({
-		code: "TASK_COLUMN_ID_INVALID",
+	invalidColumnId: (columnId: string, id?: string): ResultError => ({
+		code: "Task.ColumnIdInvalid",
 		message: "Task Column ID must be valid.",
-		details: { id, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { id, columnId, date: new Date().toISOString() },
 	}),
-	invalidSubtaskIds: (id: string): AppError => ({
-		code: "TASK_SUBTASK_IDS_INVALID",
+	invalidSubtaskIds: (id?: string): ResultError => ({
+		code: "Task.SubtaskIdsInvalid",
 		message: "Task subtask IDs must be a valid array of strings.",
-		details: { id, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: {
+			id,
+			field: "subtaskIds",
+			date: new Date().toISOString(),
+		},
 	}),
-	invalidCompletionStatus: (id: string): AppError => ({
-		code: "TASK_COMPLETION_STATUS_INVALID",
+	invalidCompletionStatus: (id?: string): ResultError => ({
+		code: "Task.CompletionStatusInvalid",
 		message: "Task completion status must be a boolean.",
-		details: { id, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: {
+			...(id && { id }),
+			field: "isCompleted",
+			date: new Date().toISOString(),
+		},
 	}),
 };
 
 /**
- * Errores de Persistencia / Repositorio
- * Se disparan cuando hay problemas al obtener o guardar los datos.
+ * Persistence / Repository Errors
+ * Triggered when issues occur while retrieving or saving data.
  */
 export const taskPersistenceErrors = {
-	notFound: (id: string): AppError => ({
-		code: "TASK_NOT_FOUND",
+	notFound: (id: string): ResultError => ({
+		code: "Task.NotFound",
 		message: `Task not found with the id: ${id}`,
-		details: { id, date: new Date().toISOString() },
+		type: "Not_found",
+		metadata: { id, date: new Date().toISOString() },
 	}),
-	dataNotFound: (key: string, type?: string): AppError => ({
-		code: "TASK_DATA_NOT_PERSISTED",
+	dataNotFound: (key: string, persistenceType?: string): ResultError => ({
+		code: "Task.DataNotPersisted",
 		message: `No data found for the key: ${key}`,
-		details: { type, key, date: new Date().toISOString() },
+		type: "Not_found",
+		metadata: { persistenceType, key, date: new Date().toISOString() },
 	}),
-	corruptedData: (key: string, reason: string, type?: string): AppError => ({
-		code: "TASK_STORAGE_CORRUPTED",
+	corruptedData: (key: string, persistenceType?: string): ResultError => ({
+		code: "Task.StorageCorrupted",
 		message: `Data validation failed for the key: ${key}`,
-		details: { type, key, reason, date: new Date().toISOString() },
+		type: "Internal",
+		metadata: { persistenceType, key, date: new Date().toISOString() },
 	}),
 };

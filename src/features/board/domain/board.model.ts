@@ -10,20 +10,15 @@ export interface BoardModel {
 type BoardInput = Omit<BoardModel, "id"> & { id?: BoardModel["id"] };
 
 export const Board = (data: BoardInput): Result<BoardModel> => {
-	if (!data.name)
-		return Result.Error([
-			boardValidationErrors.emptyName(data.id ?? "undefined"),
-		]);
+	if (!data.name) return Result.Failure([boardValidationErrors.emptyName()]);
 
 	if (data.name.length > 100)
-		return Result.Error([
-			boardValidationErrors.tooLongName(data.id ?? "undefined"),
+		return Result.Failure([
+			boardValidationErrors.tooLongName(data.name.length, data.id),
 		]);
 
 	if (!data.columnIds)
-		return Result.Error([
-			boardValidationErrors.invalidColumnIds(data.id ?? "undefined"),
-		]);
+		return Result.Failure([boardValidationErrors.invalidColumnIds(data.id)]);
 
 	return Result.Success({
 		id: data.id ?? crypto.randomUUID(),

@@ -1,75 +1,92 @@
-import { AppError } from "@/shared/domain/result";
+import { ResultError } from "@/shared/domain/result";
 
 /**
- * Errores de Dominio / Validación
- * Se disparan cuando la lógica de la entidad Column es violada.
+ * Domain / Validation Errors
+ * Triggered when the Column entity's business logic is violated.
  */
 export const columnValidationErrors = {
-	emptyName: (id: string): AppError => ({
-		code: "COLUMN_NAME_EMPTY",
+	emptyName: (id?: string): ResultError => ({
+		code: "Column.NameEmpty",
 		message: "Column name cannot be empty.",
-		details: { id, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { id, field: "name", date: new Date().toISOString() },
 	}),
-	tooLongName: (id: string): AppError => ({
-		code: "COLUMN_NAME_TOO_LONG",
-		message: "Column name cannot exceed 100 characters.",
-		details: { id, date: new Date().toISOString() },
+	tooLongName: (length: number, id?: string): ResultError => ({
+		code: "Column.NameTooLong",
+		message: `Column name cannot exceed 100 characters. Current length: ${length}`,
+		type: "Validation",
+		metadata: {
+			id,
+			field: "name",
+			maxLength: 100,
+			date: new Date().toISOString(),
+		},
 	}),
-	invalidId: (id: string): AppError => ({
-		code: "COLUMN_ID_INVALID",
+	invalidId: (id: string): ResultError => ({
+		code: "Column.IdInvalid",
 		message: "Column ID must be valid.",
-		details: { id, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { id, date: new Date().toISOString() },
 	}),
-	invalidBoardId: (id: string, boardId: string): AppError => ({
-		code: "COLUMN_BOARD_ID_INVALID",
-		message: "Column board ID must be a valid id.",
-		details: { id, boardId, date: new Date().toISOString() },
+	invalidBoardId: (boardId: string, id?: string): ResultError => ({
+		code: "Column.BoardIdInvalid",
+		message: "Column board ID must be a valid ID.",
+		type: "Validation",
+		metadata: { id, boardId, date: new Date().toISOString() },
 	}),
-	negativePosition: (id: string, position: number): AppError => ({
-		code: "COLUMN_POSITION_NEGATIVE",
+	negativePosition: (position: number, id?: string): ResultError => ({
+		code: "Column.PositionNegative",
 		message: "Column position cannot be negative.",
-		details: { id, position, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { id, position, date: new Date().toISOString() },
 	}),
-	invalidPosition: (id: string, position: number): AppError => ({
-		code: "COLUMN_POSITION_INVALID",
+	invalidPosition: (position: number, id?: string): ResultError => ({
+		code: "Column.PositionInvalid",
 		message: "Column position must be a valid number.",
-		details: { id, position, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { id, position, date: new Date().toISOString() },
 	}),
-	positionTooHigh: (id: string, position: number): AppError => ({
-		code: "COLUMN_POSITION_TOO_HIGH",
+	positionTooHigh: (position: number, id?: string): ResultError => ({
+		code: "Column.PositionTooHigh",
 		message: "Column position is higher than allowed.",
-		details: { id, position, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { id, position, date: new Date().toISOString() },
 	}),
-	invalidTaskIds: (id: string): AppError => ({
-		code: "COLUMN_TASK_IDS_INVALID",
+	invalidTaskIds: (id?: string): ResultError => ({
+		code: "Column.TaskIdsInvalid",
 		message: "Column task IDs must be a valid array of strings.",
-		details: { id, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { id, field: "taskIds", date: new Date().toISOString() },
 	}),
-	invalidColor: (id: string, color: string): AppError => ({
-		code: "COLUMN_COLOR_INVALID",
-		message: "Column color must be a valid hex color code.",
-		details: { id, color, date: new Date().toISOString() },
+	invalidColor: (color: string, id?: string): ResultError => ({
+		code: "Column.ColorInvalid",
+		message: `The color '${color}' is not a valid hex code.`,
+		type: "Validation",
+		metadata: { id, color, date: new Date().toISOString() },
 	}),
 };
 
 /**
- * Errores de Persistencia / Repositorio
- * Se disparan cuando hay problemas al obtener o guardar los datos.
+ * Persistence / Repository Errors
+ * Triggered when issues occur while retrieving or saving data.
  */
 export const columnPersistenceErrors = {
-	notFound: (id: string): AppError => ({
-		code: "COLUMN_NOT_FOUND",
+	notFound: (id: string): ResultError => ({
+		code: "Column.NotFound",
 		message: "Column not found.",
-		details: { id, date: new Date().toISOString() },
+		type: "Not_found",
+		metadata: { id, date: new Date().toISOString() },
 	}),
-	dataNotFound: (key: string, type?: string): AppError => ({
-		code: "COLUMN_DATA_NOT_PERSISTED",
+	dataNotFound: (key: string, persistenceType?: string): ResultError => ({
+		code: "Column.DataNotPersisted",
 		message: `No data found for the key: ${key}`,
-		details: { type, key, date: new Date().toISOString() },
+		type: "Not_found",
+		metadata: { persistenceType, key, date: new Date().toISOString() },
 	}),
-	corruptedData: (key: string, reason: string, type?: string): AppError => ({
-		code: "COLUMN_STORAGE_CORRUPTED",
-		message: `Data validation failed for the key: ${key}`,
-		details: { type, key, reason, date: new Date().toISOString() },
+	corruptedData: (key: string, persistenceType?: string): ResultError => ({
+		code: "Column.StorageCorrupted",
+		message: `Data validation failed for key: ${key}`,
+		type: "Internal",
+		metadata: { persistenceType, key, date: new Date().toISOString() },
 	}),
 };

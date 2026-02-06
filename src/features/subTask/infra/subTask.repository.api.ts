@@ -1,10 +1,10 @@
-import { AppError, Result } from "@/shared/domain/result";
+import { ResultError, Result } from "@/shared/domain/result";
 import { HttpClientErrorResponse } from "@/shared/infra/http/axios-error.interceptor";
 import { httpClient } from "@/shared/infra/http/http.client";
 import { HttpStatusCode } from "axios";
 import {
 	subTaskPersistenceErrors,
-	subTaskValidationError,
+	subTaskValidationErrors,
 } from "../domain/subTask.errors";
 import { SubTask, SubTaskModel } from "../domain/subTask.model";
 import { ISubTaskRepository } from "../domain/subTask.repository";
@@ -17,12 +17,12 @@ interface SubTaskApiDto {
 }
 
 export const apiSubTaskRepository: ISubTaskRepository = {
-	findById: (id: string): Promise<Result<SubTaskModel>> =>
+	findById: (subTaskId: string): Promise<Result<SubTaskModel>> =>
 		httpClient
-			.get(`/subtasks/${id}`)
+			.get(`/subtasks/${subTaskId}`)
 			.then((res) => toSubTask(res.data))
 			.catch((error: HttpClientErrorResponse) =>
-				mapHttpSubTaskErrorToResult(error, { id } as SubTaskModel),
+				mapHttpSubTaskErrorToResult(error, { id: subTaskId } as SubTaskModel),
 			),
 
 	create: (subTask: SubTaskModel): Promise<Result<SubTaskModel>> =>
@@ -74,33 +74,38 @@ const mapHttpSubTaskErrorToResult = <R = SubTaskModel>(
 	const responseData = error.response?.data;
 
 	if (statusCode === HttpStatusCode.NotFound) {
-		return Result.Error([subTaskPersistenceErrors.notFound(model.id)]);
+		return Result.Failure([subTaskPersistenceErrors.notFound(model.id)]);
 	}
 
 	if (statusCode === HttpStatusCode.BadRequest && responseData?.errors) {
-		const validationErrors: AppError[] = [];
+		const validationErrors: ResultError[] = [];
 		const fields = responseData.errors;
 
 		if (fields.id)
-			validationErrors.push(subTaskValidationError.invalidId(model.id));
+			validationErrors.push(subTaskValidationErrors.invalidId(model.id));
 
 		if (fields.taskId)
-			validationErrors.push(subTaskValidationError.invalidTaskId(model.id));
+			validationErrors.push(
+				subTaskValidationErrors.invalidTaskId(model.taskId, model.id),
+			);
 
 		if (fields.description)
 			validationErrors.push(
-				subTaskValidationError.tooLongDescription(model.id),
+				subTaskValidationErrors.tooLongDescription(
+					model.description.length,
+					model.id,
+				),
 			);
 
 		if (fields.isCompleted)
 			validationErrors.push(
-				subTaskValidationError.invalidIsCompleted(model.id),
+				subTaskValidationErrors.invalidIsCompleted(model.id),
 			);
 
-		if (validationErrors.length > 0) return Result.Error(validationErrors);
+		if (validationErrors.length > 0) return Result.Failure(validationErrors);
 	}
 
-	return Result.Error([
-		subTaskPersistenceErrors.dataNotFound("UNDEFINED", "api"),
+	return Result.Failure([
+		subTaskPersistenceErrors.dataNotFound("/subTasks", "api"),
 	]);
 };

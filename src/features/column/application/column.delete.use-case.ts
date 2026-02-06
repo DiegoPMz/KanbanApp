@@ -18,7 +18,7 @@ export const deleteColumn = (columnRepository: IColumnRepository) => {
 
 			return columnDeletedResult.isSuccess
 				? columnFoundedResult
-				: Result.Error<ColumnModel>(columnDeletedResult.errors);
+				: Result.Failure(columnDeletedResult.errors);
 		},
 	};
 };

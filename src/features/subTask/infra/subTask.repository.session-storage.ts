@@ -10,22 +10,20 @@ import { subTaskPersistenceErrors } from "./../domain/subTask.errors";
 
 export const sessionStorageSubTaskRepository: ISubTaskRepository = {
 	findById: async (
-		columnId: SubTaskModel["id"],
+		subTaskId: SubTaskModel["id"],
 	): Promise<Result<SubTaskModel>> => {
 		const { isSuccess, value, errors } = await loadPersistedSubTasks();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
-		const subTaskFounded = value.find((subTask) => subTask.id === columnId);
+		const subTaskFounded = value.find((subTask) => subTask.id === subTaskId);
 		return subTaskFounded
 			? Result.Success(subTaskFounded)
-			: Result.Error([
-					subTaskPersistenceErrors.dataNotFound(columnId, "SESSION"),
-				]);
+			: Result.Failure([subTaskPersistenceErrors.notFound(subTaskId)]);
 	},
 
 	create: async (data: SubTaskModel): Promise<Result<SubTaskModel>> => {
 		const { isSuccess, value, errors } = await loadPersistedSubTasks();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		sessionDb.subtasks.save([...value, data]);
 		return Result.Success(data);
@@ -33,15 +31,13 @@ export const sessionStorageSubTaskRepository: ISubTaskRepository = {
 
 	update: async (data: SubTaskModel): Promise<Result<SubTaskModel>> => {
 		const { isSuccess, value, errors } = await loadPersistedSubTasks();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		const subTaskFoundedId = value.findIndex(
 			(subTask) => subTask.id === data.id,
 		);
 		if (subTaskFoundedId === -1) {
-			return Result.Error([
-				subTaskPersistenceErrors.dataNotFound(data.id, "SESSION"),
-			]);
+			return Result.Failure([subTaskPersistenceErrors.notFound(data.id)]);
 		}
 
 		value[subTaskFoundedId] = data;
@@ -52,13 +48,11 @@ export const sessionStorageSubTaskRepository: ISubTaskRepository = {
 
 	delete: async (data: SubTaskModel): Promise<Result<string>> => {
 		const { isSuccess, value, errors } = await loadPersistedSubTasks();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		const subTaskFounded = value.find((subTask) => subTask.id === data.id);
 		if (!subTaskFounded) {
-			return Result.Error([
-				subTaskPersistenceErrors.dataNotFound(data.id, "SESSION"),
-			]);
+			return Result.Failure([subTaskPersistenceErrors.notFound(data.id)]);
 		}
 		const subTasksUpdated = value.filter((subTask) => subTask.id !== data.id);
 		sessionDb.subtasks.save(subTasksUpdated);
@@ -80,8 +74,11 @@ const loadPersistedSubTasks = async (): Promise<Result<SubTaskModel[]>> => {
 	const persistedSubTasks = sessionDb.subtasks.get();
 
 	if (!persistedSubTasks)
-		return Result.Error([
-			subTaskPersistenceErrors.dataNotFound(sessionDbKeys.subtasks, "SESSION"),
+		return Result.Failure([
+			subTaskPersistenceErrors.dataNotFound(
+				sessionDbKeys.subtasks,
+				"SESSION_STORAGE",
+			),
 		]);
 
 	const validation =
@@ -89,10 +86,10 @@ const loadPersistedSubTasks = async (): Promise<Result<SubTaskModel[]>> => {
 
 	return validation.success
 		? Result.Success(validation.data)
-		: Result.Error([
+		: Result.Failure([
 				subTaskPersistenceErrors.corruptedData(
 					sessionDbKeys.subtasks,
-					"SESSION",
+					"SESSION_STORAGE",
 				),
 			]);
 };

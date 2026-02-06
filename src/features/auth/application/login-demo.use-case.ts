@@ -9,7 +9,8 @@ export const loginDemo = (
 	return {
 		handle: async (): Promise<Result<void>> => {
 			const demoUserResult = await userCreator.create();
-			if (!demoUserResult.isSuccess) return Result.Error(demoUserResult.errors);
+			if (!demoUserResult.isSuccess)
+				return Result.Failure(demoUserResult.errors);
 
 			await authService.externalAuthRedirect();
 			return Result.Success(undefined);

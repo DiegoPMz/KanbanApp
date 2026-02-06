@@ -12,12 +12,13 @@ export const apiAuthService = (): IAuthService => ({
 			.get<string>("/auth/logout")
 			.then((res) => Result.Success(res.data))
 			.catch((error: HttpClientErrorResponse) =>
-				Result.Error([
+				Result.Failure([
 					{
 						code: "LOGOUT_ERROR",
 						message:
 							error.response?.data?.detail || "An error occurred during logout",
-						details: { date: new Date().toISOString() },
+						type: "Internal",
+						metadata: { date: new Date().toISOString() },
 					},
 				]),
 			),

@@ -1,7 +1,7 @@
 import { ColumnModel } from "@/features/column";
 import { SubTaskModel } from "@/features/subTask/domain/subTask.model";
 import { TaskModel } from "@/features/task";
-import { AppError, Result } from "@/shared/domain/result";
+import { ResultError, Result } from "@/shared/domain/result";
 import { HttpClientErrorResponse } from "@/shared/infra/http/axios-error.interceptor";
 import { httpClient } from "@/shared/infra/http/http.client";
 import { HttpStatusCode } from "axios";
@@ -54,7 +54,9 @@ export const apiBoardRepository: IBoardRepository = {
 				Result.Success(res.data.map((toBoardDto) => toBoard(toBoardDto).value)),
 			)
 			.catch(() =>
-				Result.Error([boardRepositoryErrors.dataNotFound("UNDEFINED", "api")]),
+				Result.Failure([
+					boardRepositoryErrors.dataNotFound("UNDEFINED", "api"),
+				]),
 			),
 
 	findById: (boardId: BoardModel["id"]): Promise<Result<BoardModel>> =>
@@ -160,21 +162,23 @@ const mapHttpBoardErrorToResult = <R = BoardModel>(
 	const responseData = error.response?.data;
 
 	if (statusCode === HttpStatusCode.NotFound) {
-		return Result.Error([boardRepositoryErrors.notFound(model.id)]);
+		return Result.Failure([boardRepositoryErrors.notFound(model.id)]);
 	}
 
 	if (statusCode === HttpStatusCode.BadRequest && responseData?.errors) {
-		const validationErrors: AppError[] = [];
+		const validationErrors: ResultError[] = [];
 		const fields = responseData.errors;
 
 		if (fields.id)
 			validationErrors.push(boardValidationErrors.invalidId(model.id));
 
 		if (fields.name)
-			validationErrors.push(boardValidationErrors.tooLongName(model.id));
+			validationErrors.push(
+				boardValidationErrors.tooLongName(model.name.length, model.id),
+			);
 
-		if (validationErrors.length > 0) return Result.Error(validationErrors);
+		if (validationErrors.length > 0) return Result.Failure(validationErrors);
 	}
 
-	return Result.Error([boardRepositoryErrors.dataNotFound("UNDEFINED", "api")]);
+	return Result.Failure([boardRepositoryErrors.dataNotFound("/boards", "api")]);
 };

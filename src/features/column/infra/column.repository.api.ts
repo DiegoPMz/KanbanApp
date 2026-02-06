@@ -1,5 +1,5 @@
 import { Column, ColumnModel } from "@/features/column/domain/column.model";
-import { AppError, Result } from "@/shared/domain/result";
+import { ResultError, Result } from "@/shared/domain/result";
 import { HttpClientErrorResponse } from "@/shared/infra/http/axios-error.interceptor";
 import { httpClient } from "@/shared/infra/http/http.client";
 import { HttpStatusCode } from "axios";
@@ -88,38 +88,40 @@ const mapHttpColumnErrorToResult = <R = ColumnModel>(
 	const responseData = error.response?.data;
 
 	if (statusCode === HttpStatusCode.NotFound) {
-		return Result.Error([columnPersistenceErrors.notFound(model.id)]);
+		return Result.Failure([columnPersistenceErrors.notFound(model.id)]);
 	}
 
 	if (statusCode === HttpStatusCode.BadRequest && responseData?.errors) {
-		const validationErrors: AppError[] = [];
+		const validationErrors: ResultError[] = [];
 		const fields = responseData.errors;
 
 		if (fields.id)
 			validationErrors.push(columnValidationErrors.invalidId(model.id));
 
 		if (fields.name)
-			validationErrors.push(columnValidationErrors.tooLongName(model.id));
+			validationErrors.push(
+				columnValidationErrors.tooLongName(model.name.length, model.id),
+			);
 
 		if (fields.color)
 			validationErrors.push(
-				columnValidationErrors.invalidColor(model.id, model.color),
+				columnValidationErrors.invalidColor(model.color, model.id),
 			);
 
 		if (fields.position)
 			validationErrors.push(
-				columnValidationErrors.negativePosition(model.id, model.position),
+				columnValidationErrors.negativePosition(model.position, model.id),
 			);
 
 		if (fields.boardId)
 			validationErrors.push(
-				columnValidationErrors.invalidBoardId(model.id, model.boardId),
+				columnValidationErrors.invalidBoardId(model.boardId, model.id),
 			);
 
-		if (validationErrors.length > 0) return Result.Error(validationErrors);
+		if (validationErrors.length > 0) return Result.Failure(validationErrors);
 	}
 
-	return Result.Error([
-		columnPersistenceErrors.dataNotFound("UNDEFINED", "api"),
+	return Result.Failure([
+		columnPersistenceErrors.dataNotFound("/columns", "api"),
 	]);
 };

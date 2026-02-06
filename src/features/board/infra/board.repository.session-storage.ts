@@ -16,7 +16,7 @@ export const sessionStorageBoardRepository: IBoardRepository = {
 	// TODO: implement proper pagination
 	findPaginated: async (page: number, limit: number) => {
 		const currentBoards = await loadPersistedBoards();
-		if (!currentBoards.isSuccess) return Result.Error([]);
+		if (!currentBoards.isSuccess) return Result.Failure([]);
 
 		// ❌
 		return Result.Success([]);
@@ -26,10 +26,10 @@ export const sessionStorageBoardRepository: IBoardRepository = {
 		id: string,
 	): Promise<Result<BoardFullDetailsModel>> => {
 		const { value, isSuccess, errors } = await loadPersistedBoards();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		if (value.findIndex((board) => board.id === board.id) === -1)
-			return Result.Error([boardRepositoryErrors.notFound(id)]);
+			return Result.Failure([boardRepositoryErrors.notFound(id)]);
 
 		const columnsPersisted = sessionDb.columns.get();
 		const tasksPersisted = sessionDb.tasks.get();
@@ -42,7 +42,7 @@ export const sessionStorageBoardRepository: IBoardRepository = {
 		const subTasks: SubTaskModel[] = [];
 
 		if (!columnsPersisted || !tasksPersisted)
-			return Result.Success<BoardFullDetailsModel>({
+			return Result.Success({
 				columns,
 				tasks,
 				subTasks,
@@ -71,17 +71,17 @@ export const sessionStorageBoardRepository: IBoardRepository = {
 
 	findById: async (boardId: BoardModel["id"]): Promise<Result<BoardModel>> => {
 		const { isSuccess, value, errors } = await loadPersistedBoards();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		const boardFounded = value.find((b) => b.id === boardId);
 		return boardFounded
 			? Result.Success(boardFounded)
-			: Result.Error([boardRepositoryErrors.notFound(boardId)]);
+			: Result.Failure([boardRepositoryErrors.notFound(boardId)]);
 	},
 
 	create: async (data: BoardModel): Promise<Result<BoardModel>> => {
 		const { isSuccess, value, errors } = await loadPersistedBoards();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		sessionDb.boards.save([...value, data]);
 		return Result.Success(data);
@@ -89,11 +89,11 @@ export const sessionStorageBoardRepository: IBoardRepository = {
 
 	update: async (data: BoardModel): Promise<Result<BoardModel>> => {
 		const { isSuccess, value, errors } = await loadPersistedBoards();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		const boardFoundedIndex = value.findIndex((board) => board.id === board.id);
 		if (boardFoundedIndex === -1)
-			return Result.Error([boardRepositoryErrors.notFound(data.id)]);
+			return Result.Failure([boardRepositoryErrors.notFound(data.id)]);
 
 		value[boardFoundedIndex] = data;
 		sessionDb.boards.save(value);
@@ -103,11 +103,11 @@ export const sessionStorageBoardRepository: IBoardRepository = {
 
 	delete: async (data: BoardModel): Promise<Result<string>> => {
 		const { isSuccess, value, errors } = await loadPersistedBoards();
-		if (!isSuccess) return Result.Error(errors);
+		if (!isSuccess) return Result.Failure(errors);
 
 		const foundedBoard = value.find((board) => board.id === board.id);
 		if (!foundedBoard)
-			return Result.Error([boardRepositoryErrors.notFound(data.id)]);
+			return Result.Failure([boardRepositoryErrors.notFound(data.id)]);
 
 		const updatedBoards = value.filter((b) => b.id !== foundedBoard.id);
 		sessionDb.boards.save(updatedBoards);
@@ -128,8 +128,11 @@ const loadPersistedBoards = async (): Promise<Result<BoardModel[]>> => {
 	const boardsPersisted = sessionDb.boards.get();
 
 	if (!boardsPersisted)
-		return Result.Error([
-			boardRepositoryErrors.dataNotFound(sessionDbKeys.boards, "SESSION"),
+		return Result.Failure([
+			boardRepositoryErrors.dataNotFound(
+				sessionDbKeys.boards,
+				"SESSION_STORAGE",
+			),
 		]);
 
 	const validation =
@@ -138,11 +141,10 @@ const loadPersistedBoards = async (): Promise<Result<BoardModel[]>> => {
 	if (!validation.success) {
 		sessionDb.boards.clear();
 
-		return Result.Error([
+		return Result.Failure([
 			boardRepositoryErrors.corruptedData(
 				sessionDbKeys.boards,
-				"The data not match the expected format.",
-				"SESSION",
+				"SESSION_STORAGE",
 			),
 		]);
 	}

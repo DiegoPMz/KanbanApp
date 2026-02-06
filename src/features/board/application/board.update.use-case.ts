@@ -12,7 +12,7 @@ export const updateBoard = (boardRepository: IBoardRepository) => {
 		handle: async (data: UpdateBoardDto): Promise<Result<BoardModel>> => {
 			const boardFoundedResult = await boardRepository.findById(data.id);
 			if (!boardFoundedResult.isSuccess)
-				return Result.Error(boardFoundedResult.errors);
+				return Result.Failure(boardFoundedResult.errors);
 
 			const boardUpdatedResult = Board({
 				id: boardFoundedResult.value.id,
@@ -22,7 +22,7 @@ export const updateBoard = (boardRepository: IBoardRepository) => {
 
 			return boardUpdatedResult.isSuccess
 				? boardRepository.update(boardUpdatedResult.value)
-				: Result.Error(boardUpdatedResult.errors);
+				: Result.Failure(boardUpdatedResult.errors);
 		},
 	};
 };

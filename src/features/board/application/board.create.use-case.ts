@@ -9,7 +9,7 @@ export interface CreateBoardDto {
 export const createBoard = (boardRepository: IBoardRepository) => {
 	return {
 		handle: async (data: CreateBoardDto): Promise<Result<BoardModel>> => {
-			if (!data.name) return Result.Error([]);
+			if (!data.name) return Result.Failure([]);
 
 			const boardCreatedResult = Board({
 				name: data.name,
