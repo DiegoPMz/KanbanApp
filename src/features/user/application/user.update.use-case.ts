@@ -11,7 +11,7 @@ export const updateUser = (userRepository: IUserRepository) => {
 		handle: async (data: UpdateUserDto): Promise<Result<UserModel>> => {
 			const existingUserResult = await userRepository.getDetails();
 			if (!existingUserResult.isSuccess)
-				return Result.Error(existingUserResult.errors);
+				return Result.Failure(existingUserResult.errors);
 
 			const updatedUser = User({
 				...existingUserResult.value,
@@ -20,7 +20,7 @@ export const updateUser = (userRepository: IUserRepository) => {
 
 			return updatedUser.isSuccess
 				? userRepository.update(updatedUser.value)
-				: Result.Error(updatedUser.errors);
+				: Result.Failure(updatedUser.errors);
 		},
 	};
 };

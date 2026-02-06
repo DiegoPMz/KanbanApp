@@ -43,8 +43,8 @@ const loadPersistedUser = async (): Promise<Result<UserModel>> => {
 	const userPersisted = sessionDb.user.get();
 
 	if (!userPersisted)
-		return Result.Error([
-			userRepositoryErrors.dataNotFound(sessionDbKeys.user, "SESSION"),
+		return Result.Failure([
+			userRepositoryErrors.dataNotFound(sessionDbKeys.user, "SESSION_STORAGE"),
 		]);
 
 	const validation =
@@ -53,7 +53,7 @@ const loadPersistedUser = async (): Promise<Result<UserModel>> => {
 	if (validation.success) return User(validation.data);
 
 	sessionDb.user.clear();
-	return Result.Error([
-		userRepositoryErrors.corruptedData(sessionDbKeys.user, "SESSION"),
+	return Result.Failure([
+		userRepositoryErrors.corruptedData(sessionDbKeys.user, "SESSION_STORAGE"),
 	]);
 };

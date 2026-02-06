@@ -1,54 +1,77 @@
-import { AppError } from "@/shared/domain/result";
+import { ResultError } from "@/shared/domain/result";
+import { USER_SESSION_TYPES } from "./user.model";
+
 /**
- * Errores de Dominio / Validación
- * Se disparan cuando la lógica de la entidad User es violada.
+ * Domain / Validation Errors
+ * Triggered when the User entity's business logic is violated.
  */
 export const userValidationErrors = {
-	invalidTheme: (id: string, theme: string): AppError => ({
-		code: "USER_THEME_INVALID",
+	invalidTheme: (theme: string): ResultError => ({
+		code: "User.InvalidTheme",
 		message: `The theme '${theme}' is not valid.`,
-		details: { id, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { field: "theme", date: new Date().toISOString() },
 	}),
-	invalidSessionType: (id: string, sessionType: string): AppError => ({
-		code: "USER_SESSION_TYPE_INVALID",
+
+	invalidSessionType: (sessionType: string): ResultError => ({
+		code: "User.SessionTypeInvalid",
 		message: `The session type '${sessionType}' is not valid.`,
-		details: { id, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { field: "sessionType", date: new Date().toISOString() },
 	}),
-	invalidId: (id: string): AppError => ({
-		code: "USER_ID_INVALID",
+
+	invalidId: (id: string): ResultError => ({
+		code: "User.IdInvalid",
 		message: `The user ID '${id}' is not valid.`,
-		details: { id, date: new Date().toISOString() },
-	}),
-	requiredIdForRegisteredUser: (sessionType: string): AppError => ({
-		code: "USER_ID_REQUIRED",
-		message: `A user ID is required for session type '${sessionType}'.`,
-		details: { sessionType, date: new Date().toISOString() },
-	}),
-	invalidEmailForRegisteredUser: (id: string): AppError => ({
-		code: "USER_EMAIL_INVALID",
-		message: `Registered user with ID '${id}' must have a valid email.`,
-		details: { id, date: new Date().toISOString() },
+		type: "Validation",
+		metadata: { field: "id", date: new Date().toISOString() },
 	}),
 };
 
 /**
- * Errores de Persistencia / Repositorio
- * Se disparan cuando hay problemas al obtener o guardar los datos.
+ * Persistence / Repository Errors
+ * Triggered when issues occur while retrieving or saving data.
  */
 export const userRepositoryErrors = {
-	notFound: (id: string): AppError => ({
-		code: "USER_NOT_FOUND",
-		message: `User with ID ${id} not found.`,
-		details: { userId: id, date: new Date().toISOString() },
+	notFound: (id: string): ResultError => ({
+		code: "User.NotFound",
+		message: `User not founded.`,
+		type: "Not_found",
+		metadata: { userId: id, date: new Date().toISOString() },
 	}),
-	dataNotFound: (key: string, type?: string): AppError => ({
-		code: "USER_DATA_NOT_PERSISTED",
+
+	dataNotFound: (key: string, persistenceType?: string): ResultError => ({
+		code: "User.DataNotPersisted",
 		message: `No data found for the key: ${key}`,
-		details: { type, key, date: new Date().toISOString() },
+		type: "Internal",
+		metadata: { persistenceType, key, date: new Date().toISOString() },
 	}),
-	corruptedData: (key: string, reason: string, type?: string): AppError => ({
-		code: "USER_STORAGE_CORRUPTED",
-		message: `Data validation failed for the key: ${key}`,
-		details: { type, key, reason, date: new Date().toISOString() },
+
+	corruptedData: (key: string, persistenceType?: string): ResultError => ({
+		code: "User.StorageCorrupted",
+		message: `Data validation failed for the key: ${key}.`,
+		type: "Internal",
+		metadata: { persistenceType, key, date: new Date().toISOString() },
+	}),
+};
+
+/**
+ * Business Rule Errors (Conflict)
+ * Triggered when the request is valid but violates domain consistency rules
+ * or the current state of the user's session.
+ */
+export const userBusinessErrors = {
+	requiredIdForRegisteredUser: (): ResultError => ({
+		code: "User.IdRequired",
+		message: `A user ID is required for session type '${USER_SESSION_TYPES.BASE}'.`,
+		type: "Conflict",
+		metadata: { field: "id", date: new Date().toISOString() },
+	}),
+
+	requiredEmailForBaseSession: (): ResultError => ({
+		code: "User.EmailRequired",
+		message: `An email is required for session type '${USER_SESSION_TYPES.BASE}'.`,
+		type: "Conflict",
+		metadata: { field: "email", date: new Date().toISOString() },
 	}),
 };

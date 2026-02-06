@@ -14,14 +14,14 @@ export type ResultError = {
 };
 
 export class Result<TValue> {
-	readonly value: TValue | null;
+	readonly value: TValue;
 	readonly isSuccess: boolean;
 	readonly errors: ReadonlyArray<ResultError>;
 
 	private constructor(
-		value: TValue | null,
+		value: TValue,
 		isSuccess: boolean,
-		errors: ResultError[],
+		errors: readonly ResultError[],
 	) {
 		this.value = value;
 		this.isSuccess = isSuccess;
@@ -32,11 +32,11 @@ export class Result<TValue> {
 		return new Result(value, true, []);
 	}
 
-	static Failure<T>(errors: ResultError[]): Result<T> {
+	static Failure<T>(errors: readonly ResultError[]): Result<T> {
 		if (errors.length === 0) {
 			console.warn("Warning: Result.Failure created with no errors.");
 		}
-		return new Result<T>(null, false, errors);
+		return new Result<T>(null as T, false, errors);
 	}
 
 	match<R>(

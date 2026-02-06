@@ -7,4 +7,3 @@ export * from "./domain/user.repository";
 export * from "./infra/user.creator.session-storage";
 export * from "./infra/user.repository.api";
 export * from "./infra/user.repository.session-storage";
-export * from "./store/user.store";

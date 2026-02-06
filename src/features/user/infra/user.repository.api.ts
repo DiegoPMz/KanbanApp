@@ -20,7 +20,7 @@ export const apiUserRepository: IUserRepository = {
 	getDetails: (): Promise<Result<UserModel>> =>
 		httpClient
 			.get<UserApiDto>("/user")
-			.then((response) => toUser(response.data))
+			.then((res) => toUser(res.data))
 			.catch((error: HttpClientErrorResponse) =>
 				mapHttpUserErrorToResult(error, {} as UserModel),
 			),
@@ -39,7 +39,7 @@ const toUser = (dto: UserApiDto): Result<UserModel> =>
 		id: dto.id,
 		email: dto.email,
 		theme: dto.appTheme,
-		sessionType: USER_SESSION_TYPES.REGISTER,
+		sessionType: USER_SESSION_TYPES.BASE,
 	});
 
 const mapHttpUserErrorToResult = <R = UserModel>(
@@ -49,9 +49,7 @@ const mapHttpUserErrorToResult = <R = UserModel>(
 	const statusCode = error.response?.status;
 
 	if (statusCode === HttpStatusCode.BadRequest)
-		return Result.Error([
-			userValidationErrors.invalidTheme(model?.id ?? "UNDEFINED", model.theme),
-		]);
+		return Result.Failure([userValidationErrors.invalidTheme(model.theme)]);
 
-	return Result.Error([userRepositoryErrors.dataNotFound("UNDEFINED", "api")]);
+	return Result.Failure([userRepositoryErrors.dataNotFound("/user", "api")]);
 };
