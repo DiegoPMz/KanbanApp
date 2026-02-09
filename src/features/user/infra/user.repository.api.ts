@@ -9,6 +9,7 @@ import {
 import { USER_SESSION_TYPES, UserModel } from "../domain/user.model";
 import { IUserRepository } from "../domain/user.repository";
 import { User } from "./../domain/user.model";
+import { mapGlobalHttpError } from "@/shared/infra/http/global-error.mapper";
 
 interface UserApiDto {
 	id: string;
@@ -46,7 +47,10 @@ const mapHttpUserErrorToResult = <R = UserModel>(
 	error: HttpClientErrorResponse,
 	model: UserModel,
 ): Result<R> => {
-	const statusCode = error.response?.status;
+	const global = mapGlobalHttpError(error);
+	if (global) return Result.Failure([global]);
+
+	const statusCode = error.response?.status ?? error.status;
 
 	if (statusCode === HttpStatusCode.BadRequest)
 		return Result.Failure([userValidationErrors.invalidTheme(model.theme)]);

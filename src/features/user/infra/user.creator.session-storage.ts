@@ -7,9 +7,10 @@ import {
 	USER_THEME_TYPES,
 	UserModel,
 } from "../domain/user.model";
+import { userErrorCodes } from "../domain/user.errors";
 
 export const sessionStorageUserCreator: IUserCreator = {
-	create: (): Promise<Result<UserModel>> => {
+	create: async (): Promise<Result<UserModel>> => {
 		const demoUser = User({
 			id: "demo-user-id",
 			sessionType: USER_SESSION_TYPES.DEMO,
@@ -17,7 +18,12 @@ export const sessionStorageUserCreator: IUserCreator = {
 			email: null,
 		});
 
-		if (demoUser.isSuccess) sessionDb.user.save(demoUser.value);
-		return Promise.resolve(demoUser);
+		if (
+			demoUser.isSuccess ||
+			demoUser.errors[0].code === userErrorCodes.DataNotPersisted
+		)
+			sessionDb.user.save(demoUser.value);
+
+		return demoUser;
 	},
 };

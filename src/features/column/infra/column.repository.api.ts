@@ -8,6 +8,7 @@ import {
 	columnValidationErrors,
 } from "../domain/column.errors";
 import { IColumnRepository } from "../domain/column.repository";
+import { mapGlobalHttpError } from "@/shared/infra/http/global-error.mapper";
 
 interface ColumnApiDto {
 	id: string;
@@ -84,7 +85,10 @@ const mapHttpColumnErrorToResult = <R = ColumnModel>(
 	error: HttpClientErrorResponse,
 	model: ColumnModel,
 ): Result<R> => {
-	const statusCode = error.response?.status;
+	const global = mapGlobalHttpError(error);
+	if (global) return Result.Failure([global]);
+
+	const statusCode = error.response?.status ?? error.status;
 	const responseData = error.response?.data;
 
 	if (statusCode === HttpStatusCode.NotFound) {

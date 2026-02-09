@@ -2,6 +2,7 @@ import { Result } from "@/shared/domain/result";
 import { HttpClientErrorResponse } from "@/shared/infra/http/axios-error.interceptor";
 import { httpClient } from "@/shared/infra/http/http.client";
 import { IAuthService } from "../application/auth.service";
+import { mapGlobalHttpError } from "@/shared/infra/http/global-error.mapper";
 
 export const apiAuthService = (): IAuthService => ({
 	externalAuthRedirect: async (): Promise<void> =>
@@ -11,8 +12,11 @@ export const apiAuthService = (): IAuthService => ({
 		httpClient
 			.get<string>("/auth/logout")
 			.then((res) => Result.Success(res.data))
-			.catch((error: HttpClientErrorResponse) =>
-				Result.Failure([
+			.catch((error: HttpClientErrorResponse) => {
+				const global = mapGlobalHttpError(error);
+				if (global) return Result.Failure([global]);
+
+				return Result.Failure([
 					{
 						code: "LOGOUT_ERROR",
 						message:
@@ -20,6 +24,6 @@ export const apiAuthService = (): IAuthService => ({
 						type: "Internal",
 						metadata: { date: new Date().toISOString() },
 					},
-				]),
-			),
+				]);
+			}),
 });

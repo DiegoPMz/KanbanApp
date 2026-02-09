@@ -8,6 +8,7 @@ import {
 } from "../domain/subTask.errors";
 import { SubTask, SubTaskModel } from "../domain/subTask.model";
 import { ISubTaskRepository } from "../domain/subTask.repository";
+import { mapGlobalHttpError } from "@/shared/infra/http/global-error.mapper";
 
 interface SubTaskApiDto {
 	id: string;
@@ -70,7 +71,10 @@ const mapHttpSubTaskErrorToResult = <R = SubTaskModel>(
 	error: HttpClientErrorResponse,
 	model: SubTaskModel,
 ): Result<R> => {
-	const statusCode = error.response?.status;
+	const global = mapGlobalHttpError(error);
+	if (global) return Result.Failure([global]);
+
+	const statusCode = error.response?.status ?? error.status;
 	const responseData = error.response?.data;
 
 	if (statusCode === HttpStatusCode.NotFound) {

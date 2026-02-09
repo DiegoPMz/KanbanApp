@@ -9,6 +9,7 @@ import {
 import { Task } from "../domain/task.model";
 import { ITaskRepository } from "../domain/task.repository";
 import { TaskModel } from "./../domain/task.model";
+import { mapGlobalHttpError } from "@/shared/infra/http/global-error.mapper";
 
 interface TaskApiDto {
 	columnId: string;
@@ -119,7 +120,10 @@ const mapHttpTaskErrorToResult = <R = TaskModel>(
 	error: HttpClientErrorResponse,
 	model: TaskModel,
 ): Result<R> => {
-	const statusCode = error.response?.status;
+	const global = mapGlobalHttpError(error);
+	if (global) return Result.Failure([global]);
+
+	const statusCode = error.response?.status ?? error.status;
 	const responseData = error.response?.data;
 
 	if (statusCode === HttpStatusCode.NotFound) {

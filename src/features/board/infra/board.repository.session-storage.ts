@@ -10,7 +10,10 @@ import z from "zod";
 import { BoardFullDetailsModel } from "../domain/board.board-full-details.model";
 import { BoardModel } from "../domain/board.model";
 import { IBoardRepository } from "../domain/board.repository";
-import { boardRepositoryErrors } from "./../domain/board.errors";
+import {
+	boardErrorCodes,
+	boardRepositoryErrors,
+} from "./../domain/board.errors";
 
 export const sessionStorageBoardRepository: IBoardRepository = {
 	// TODO: implement proper pagination
@@ -81,9 +84,12 @@ export const sessionStorageBoardRepository: IBoardRepository = {
 
 	create: async (data: BoardModel): Promise<Result<BoardModel>> => {
 		const { isSuccess, value, errors } = await loadPersistedBoards();
-		if (!isSuccess) return Result.Failure(errors);
+		if (!isSuccess) {
+			if (errors[0].code !== boardErrorCodes.DataNotPersisted)
+				return Result.Failure(errors);
+		}
 
-		sessionDb.boards.save([...value, data]);
+		sessionDb.boards.save([...(isSuccess ? value : []), data]);
 		return Result.Success(data);
 	},
 

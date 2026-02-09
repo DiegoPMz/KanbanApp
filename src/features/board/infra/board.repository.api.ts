@@ -12,6 +12,7 @@ import {
 } from "../domain/board.errors";
 import { Board, BoardModel } from "../domain/board.model";
 import { IBoardRepository } from "../domain/board.repository";
+import { mapGlobalHttpError } from "@/shared/infra/http/global-error.mapper";
 
 interface boardApiDto {
 	id: string;
@@ -158,7 +159,10 @@ const mapHttpBoardErrorToResult = <R = BoardModel>(
 	error: HttpClientErrorResponse,
 	model: BoardModel,
 ): Result<R> => {
-	const statusCode = error.response?.status;
+	const global = mapGlobalHttpError(error);
+	if (global) return Result.Failure([global]);
+
+	const statusCode = error.response?.status ?? error.status;
 	const responseData = error.response?.data;
 
 	if (statusCode === HttpStatusCode.NotFound) {

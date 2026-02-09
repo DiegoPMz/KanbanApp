@@ -12,6 +12,7 @@ import {
 	UserModel,
 } from "../domain/user.model";
 import { IUserRepository } from "../domain/user.repository";
+import { globalErrors } from "@/shared/domain/errors/global.error";
 
 export const sessionStorageUserRepository: IUserRepository = {
 	getDetails: async (): Promise<Result<UserModel>> => loadPersistedUser(),
@@ -41,18 +42,14 @@ const userSessionStorageSchema: z.ZodType<UserModel> = z.object({
 
 const loadPersistedUser = async (): Promise<Result<UserModel>> => {
 	const userPersisted = sessionDb.user.get();
-
-	if (!userPersisted)
-		return Result.Failure([
-			userRepositoryErrors.dataNotFound(sessionDbKeys.user, "SESSION_STORAGE"),
-		]);
+	if (!userPersisted) return Result.Failure([globalErrors.authentication()]);
 
 	const validation =
 		await userSessionStorageSchema.safeParseAsync(userPersisted);
 
 	if (validation.success) return User(validation.data);
-
 	sessionDb.user.clear();
+
 	return Result.Failure([
 		userRepositoryErrors.corruptedData(sessionDbKeys.user, "SESSION_STORAGE"),
 	]);
