@@ -2,7 +2,7 @@ import { Result } from "@/shared/domain/result";
 import { User, UserModel } from "../domain/user.model";
 import { IUserRepository } from "../domain/user.repository";
 
-interface UpdateUserDto {
+export interface UpdateUserDto {
 	theme?: UserModel["theme"];
 }
 
@@ -10,8 +10,7 @@ export const updateUser = (userRepository: IUserRepository) => {
 	return {
 		handle: async (data: UpdateUserDto): Promise<Result<UserModel>> => {
 			const existingUserResult = await userRepository.getDetails();
-			if (!existingUserResult.isSuccess)
-				return Result.Failure(existingUserResult.errors);
+			if (!existingUserResult.isSuccess) return existingUserResult;
 
 			const updatedUser = User({
 				...existingUserResult.value,
@@ -20,7 +19,7 @@ export const updateUser = (userRepository: IUserRepository) => {
 
 			return updatedUser.isSuccess
 				? userRepository.update(updatedUser.value)
-				: Result.Failure(updatedUser.errors);
+				: updatedUser;
 		},
 	};
 };

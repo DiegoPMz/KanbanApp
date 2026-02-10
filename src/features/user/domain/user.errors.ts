@@ -75,3 +75,23 @@ export const userBusinessErrors = {
 		metadata: { field: "email", date: new Date().toISOString() },
 	}),
 };
+
+export const userErrorCodes = {
+	// Validation / Domain
+	InvalidTheme: "User.InvalidTheme",
+	SessionTypeInvalid: "User.SessionTypeInvalid",
+	IdInvalid: "User.IdInvalid",
+
+	// Persistence / Repository
+	NotFound: "User.NotFound",
+	DataNotPersisted: "User.DataNotPersisted",
+	StorageCorrupted: "User.StorageCorrupted",
+
+	// Buisness Rules / Conflict
+	IdRequired: "User.IdRequired",
+	EmailRequired: "User.EmailRequired",
+} as const;
+
+// Tipado para mayor seguridad
+export type UserErrorCode =
+	(typeof userErrorCodes)[keyof typeof userErrorCodes];

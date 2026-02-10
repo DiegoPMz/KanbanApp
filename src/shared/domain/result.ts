@@ -6,6 +6,15 @@ export type ErrorTypes =
 	| "Authentication"
 	| "Authorization";
 
+export const errorTypes = {
+	Authentication: "Authentication",
+	Authorization: "Authorization",
+	Conflict: "Conflict",
+	Internal: "Internal",
+	Not_found: "Not_found",
+	Validation: "Validation",
+} as const;
+
 export type ResultError = {
 	readonly code: string;
 	readonly message: string;

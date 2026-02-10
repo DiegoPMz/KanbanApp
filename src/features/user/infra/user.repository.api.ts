@@ -11,10 +11,10 @@ import { IUserRepository } from "../domain/user.repository";
 import { User } from "./../domain/user.model";
 import { mapGlobalHttpError } from "@/shared/infra/http/global-error.mapper";
 
-interface UserApiDto {
+export interface UserApiDto {
 	id: string;
 	email: string;
-	appTheme: UserModel["theme"];
+	theme: UserModel["theme"];
 }
 
 export const apiUserRepository: IUserRepository = {
@@ -28,7 +28,7 @@ export const apiUserRepository: IUserRepository = {
 
 	update: (userData: UserModel): Promise<Result<UserModel>> =>
 		httpClient
-			.patch<UserApiDto>(`/user/theme/${userData.theme}`)
+			.patch<UserApiDto>(`/user`, { theme: userData.theme })
 			.then((res) => toUser(res.data))
 			.catch((error: HttpClientErrorResponse) =>
 				mapHttpUserErrorToResult(error, userData),
@@ -39,7 +39,7 @@ const toUser = (dto: UserApiDto): Result<UserModel> =>
 	User({
 		id: dto.id,
 		email: dto.email,
-		theme: dto.appTheme,
+		theme: dto.theme,
 		sessionType: USER_SESSION_TYPES.BASE,
 	});
 

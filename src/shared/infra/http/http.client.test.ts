@@ -1,22 +1,24 @@
-import AxiosMockAdapter from "axios-mock-adapter";
-import { beforeEach, describe, expect, test } from "vitest";
-
 import {
 	DEFAULT_PROBLEM_DETAILS,
 	ProblemDetails,
 } from "@/shared/domain/http/problem-details";
-import { httpClient } from "../http.client";
+import { http, HttpResponse } from "msw";
+import { SetupServerApi } from "msw/node";
+import { httpClient } from "./http.client";
 
-const mock = new AxiosMockAdapter(httpClient);
-mock.adapter();
+const server = new SetupServerApi([]);
 
-describe("api:api-client --> httpClient", () => {
-	beforeEach(() => {
-		mock.reset();
-	});
+describe("api:api-client --> httpClient (con MSW)", () => {
+	beforeAll(() => server.listen());
+	afterEach(() => server.resetHandlers());
+	afterAll(() => server.close());
 
 	test("should return default ProblemDetails when the API returns an error with an empty body", async () => {
-		mock.onGet("/empty").reply(400, undefined);
+		server.use(
+			http.get("*/empty", () => {
+				return new HttpResponse(null, { status: 400 });
+			}),
+		);
 
 		await expect(httpClient.get("/empty")).rejects.toMatchObject({
 			response: {
@@ -37,7 +39,11 @@ describe("api:api-client --> httpClient", () => {
 			instance: "GET /not-found",
 		};
 
-		mock.onGet("/not-found").reply(404, mockedProblemDetails);
+		server.use(
+			http.get("*/not-found", () => {
+				return HttpResponse.json(mockedProblemDetails, { status: 404 });
+			}),
+		);
 
 		await expect(httpClient.get("/not-found")).rejects.toMatchObject({
 			response: {
@@ -47,7 +53,11 @@ describe("api:api-client --> httpClient", () => {
 	});
 
 	test("should return generic ProblemDetails when a network error occurs", async () => {
-		mock.onGet("/network-error").networkError();
+		server.use(
+			http.get("*/network-error", () => {
+				return HttpResponse.error();
+			}),
+		);
 
 		await expect(httpClient.get("/network-error")).rejects.toMatchObject({
 			response: {
