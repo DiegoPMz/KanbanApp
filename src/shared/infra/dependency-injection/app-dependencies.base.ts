@@ -1,4 +1,10 @@
-import { apiAuthService, loginRegister } from "@/features/auth";
+import { router } from "@/app";
+import {
+	apiAuthService,
+	loginDemo,
+	loginRegister,
+	sessionStorageAuthService,
+} from "@/features/auth";
 import {
 	apiBoardRepository,
 	createBoard,
@@ -27,8 +33,12 @@ import {
 	reorderTask,
 	updateTask,
 } from "@/features/task";
-import { apiUserRepository, getUserDetails, updateUser } from "@/features/user";
-import { appDemoDependencies } from "./app-dependencies.demo";
+import {
+	apiUserRepository,
+	getUserDetails,
+	sessionStorageUserCreator,
+	updateUser,
+} from "@/features/user";
 import { AppDependencies } from "./dependency-configuration.context";
 
 export const appBaseDependencies: AppDependencies = {
@@ -61,7 +71,10 @@ export const appBaseDependencies: AppDependencies = {
 		deleteSubTask: deleteSubTask(apiSubTaskRepository),
 	},
 	auth: {
-		loginDemo: appDemoDependencies.auth.loginDemo,
+		loginDemo: loginDemo(
+			sessionStorageAuthService(() => router.navigate({ to: "/demo" })),
+			sessionStorageUserCreator,
+		),
 		loginRegister: loginRegister(apiAuthService()),
 	},
 };

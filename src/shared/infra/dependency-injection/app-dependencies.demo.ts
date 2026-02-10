@@ -1,5 +1,10 @@
 import { router } from "@/app";
-import { loginDemo, sessionStorageAuthService } from "@/features/auth";
+import {
+	apiAuthService,
+	loginDemo,
+	loginRegister,
+	sessionStorageAuthService,
+} from "@/features/auth";
 import {
 	createBoard,
 	deleteBoard,
@@ -34,7 +39,6 @@ import {
 	sessionStorageUserRepository,
 	updateUser,
 } from "@/features/user";
-import { appBaseDependencies } from "./app-dependencies.base";
 import { AppDependencies } from "./dependency-configuration.context";
 
 export const appDemoDependencies: AppDependencies = {
@@ -71,6 +75,6 @@ export const appDemoDependencies: AppDependencies = {
 			sessionStorageAuthService(() => router.navigate({ to: "/demo" })),
 			sessionStorageUserCreator,
 		),
-		loginRegister: appBaseDependencies.auth.loginRegister,
+		loginRegister: loginRegister(apiAuthService()),
 	},
 };

@@ -1,4 +1,4 @@
-import { UserModel } from "@/features/user";
+import { USER_SESSION_TYPES, UserModel } from "@/features/user";
 import {
 	createContext,
 	useContext,
@@ -16,12 +16,12 @@ export interface SessionTypeValue {
 }
 
 export function useSessionTypeLogic() {
-	const [sessionType, setSessionType] = useState<"DEMO" | "REGISTER">(
-		"REGISTER",
+	const [sessionType, setSessionType] = useState<SessionType>(
+		USER_SESSION_TYPES.BASE,
 	);
 
-	const setDemoSessionType = () => setSessionType("DEMO");
-	const setBaseSessionType = () => setSessionType("REGISTER");
+	const setDemoSessionType = () => setSessionType(USER_SESSION_TYPES.DEMO);
+	const setBaseSessionType = () => setSessionType(USER_SESSION_TYPES.BASE);
 
 	return useMemo(
 		() => ({ sessionType, setDemoSessionType, setBaseSessionType }),
