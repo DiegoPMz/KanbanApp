@@ -1,6 +1,7 @@
 import { getUserDetailsBaseOptions } from "@/features/user/presentation/hooks/get-user-details.hook";
 import { errorTypes } from "@/shared/domain/result";
 import { TanStackError } from "@/shared/infra/errors/tanstack-result.exception";
+import { GenericErrorView } from "@/shared/presentation/components/generic-error-view";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/(app)/(register)/_authGuard")({
@@ -23,4 +24,5 @@ export const Route = createFileRoute("/(app)/(register)/_authGuard")({
 			throw error;
 		}
 	},
+	errorComponent: GenericErrorView,
 });

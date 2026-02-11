@@ -1,5 +1,5 @@
-import { IUserRepository } from "@/features/user/domain/user.repository";
-import { Button } from "@/shared/components/ui/button";
+import { sessionStorageUserCreator } from "@/features/user";
+import { Button } from "@/shared/presentation/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -7,31 +7,30 @@ import {
 	CardFooter,
 	CardHeader,
 	CardTitle,
-} from "@/shared/components/ui/card";
+} from "@/shared/presentation/components/ui/card";
 import { useNavigate } from "@tanstack/react-router";
 import { loginDemo } from "../../application/login-demo.use-case";
-import { login } from "../../application/login.use-case";
-import { externalRedirectWeb } from "../../infra/auth.external-redirect.web";
-
-const sessionStorageUserRepository = {} as IUserRepository;
+import { loginRegister } from "../../application/login-register.use-case";
+import { apiAuthService } from "../../infra/auth.service.api";
+import { sessionStorageAuthService } from "../../infra/auth.service.session-storage";
 
 export const LoginCard = () => {
 	const navigation = useNavigate({ from: "/login" });
 
-	const handleLogin = () => {
-		login(externalRedirectWeb).handle();
-	};
+	const handleLogin = () => loginRegister(apiAuthService()).handle();
 
 	const handleLoginDemo = async () => {
-		await loginDemo(sessionStorageUserRepository).handle();
-		navigation({ to: "/demo" });
+		await loginDemo(
+			sessionStorageAuthService(() => navigation({ to: "/demo" })),
+			sessionStorageUserCreator,
+		).handle();
 	};
 
 	return (
 		<Card className="w-full max-w-sm max-[400px]:border-0 max-[400px]:bg-transparent max-[400px]:shadow-none">
 			<CardHeader>
 				<div className="flex justify-center">
-					<div className="flex h-14 w-14 items-center justify-center rounded-lg bg-secondary shadow-sm">
+					<div className="bg-secondary flex h-14 w-14 items-center justify-center rounded-lg shadow-sm">
 						<svg
 							width="20"
 							height="20"
@@ -82,15 +81,15 @@ export const LoginCard = () => {
 					<Button
 						variant="outline"
 						className="w-full"
-						onClick={() => handleLogin()}>
+						onClick={handleLogin}>
 						Continuar con Google
 					</Button>
 					<Button
 						variant="outline"
 						className="w-full border-dashed"
-						onClick={() => handleLoginDemo()}>
+						onClick={handleLoginDemo}>
 						<div className="flex items-center gap-2">
-							<span className="bg-primary/60 tracking-wide text-primary-foreground">
+							<span className="bg-primary/60 text-primary-foreground tracking-wide">
 								DEMO
 							</span>
 							Probar ahora

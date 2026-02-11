@@ -3,6 +3,7 @@ import { resultHandler } from "@/shared/application/utils/result-handler";
 import { errorTypes } from "@/shared/domain/result";
 import { appDemoDependencies } from "@/shared/infra/dependency-injection/app-dependencies.demo";
 import { TanStackError } from "@/shared/infra/errors/tanstack-result.exception";
+import { GenericErrorView } from "@/shared/presentation/components/generic-error-view";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/(app)/(demo)/_authGuard")({
@@ -31,4 +32,5 @@ export const Route = createFileRoute("/(app)/(demo)/_authGuard")({
 			throw error;
 		}
 	},
+	errorComponent: GenericErrorView,
 });
