@@ -2,7 +2,7 @@ import { Result } from "@/shared/domain/result";
 import {
 	commonErrorHandler,
 	TanStackError,
-} from "@/shared/infra/errors/TanStackError";
+} from "@/shared/infra/errors/tanstack-result.exception";
 
 /**
  * Processes a service result and throws an exception if it fails.

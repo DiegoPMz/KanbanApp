@@ -5,6 +5,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import pluginQuery from "@tanstack/eslint-plugin-query";
 
 export default tseslint.config(
 	{ ignores: ["dist", "legacy", "routeTree.gen.ts"] },
@@ -12,7 +13,8 @@ export default tseslint.config(
 		extends: [
 			js.configs.recommended,
 			...tseslint.configs.strict,
-			pluginRouter.configs["flat/recommended"],
+			...pluginRouter.configs["flat/recommended"],
+			...pluginQuery.configs["flat/recommended"],
 			eslintConfigPrettier,
 		],
 		files: ["**/*.{ts,tsx}"],

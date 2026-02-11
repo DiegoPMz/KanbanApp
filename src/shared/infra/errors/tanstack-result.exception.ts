@@ -9,6 +9,11 @@ const ERROR_PRIORITY: ErrorTypes[] = [
 	"Validation",
 ];
 
+/**
+ * A technical wrapper that transforms a ResultError into a throwable Exception.
+ * Primarily used in the Infrastructure layer to allow TanStack Query
+ * to intercept domain-specific failures while preserving error metadata.
+ */
 export class TanStackError extends Error {
 	public readonly type: ResultError["type"];
 	public readonly code: ResultError["code"];
