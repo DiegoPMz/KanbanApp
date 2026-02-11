@@ -1,10 +1,14 @@
-import { useUserStore } from "@/features/user/store/user.store";
+import { SessionTypeValue } from "@/shared/infra/dependency-injection/session-type.context";
+import { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 export interface RouterContext {
-	getUserState: ReturnType<typeof useUserStore.getInitialState>["getUserState"];
-	setUserState: ReturnType<typeof useUserStore.getInitialState>["setUserState"];
+	sessionType: SessionTypeValue["sessionType"];
+	setBaseSessionType: SessionTypeValue["setBaseSessionType"];
+	setDemoSessionType: SessionTypeValue["setDemoSessionType"];
+
+	queryClient: QueryClient;
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({

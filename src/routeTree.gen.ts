@@ -9,93 +9,141 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from "./routes/__root"
-import { Route as DashboardRouteRouteImport } from "./routes/_dashboard/route"
-import { Route as LoginIndexRouteImport } from "./routes/login/index"
-import { Route as DashboardIndexRouteImport } from "./routes/_dashboard/index"
+import { Route as LoginRouteImport } from "./routes/login"
+import { Route as appregisterAuthGuardRouteImport } from "./routes/(app)/(register)/_authGuard"
+import { Route as appdemoAuthGuardRouteImport } from "./routes/(app)/(demo)/_authGuard"
+import { Route as appregisterAuthGuardIndexRouteImport } from "./routes/(app)/(register)/_authGuard/index"
+import { Route as appdemoAuthGuardDemoRouteImport } from "./routes/(app)/(demo)/_authGuard/demo"
 
-const DashboardRouteRoute = DashboardRouteRouteImport.update({
-  id: "/_dashboard",
+const LoginRoute = LoginRouteImport.update({
+  id: "/login",
+  path: "/login",
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginIndexRoute = LoginIndexRouteImport.update({
-  id: "/login/",
-  path: "/login/",
+const appregisterAuthGuardRoute = appregisterAuthGuardRouteImport.update({
+  id: "/(app)/(register)/_authGuard",
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardIndexRoute = DashboardIndexRouteImport.update({
-  id: "/",
-  path: "/",
-  getParentRoute: () => DashboardRouteRoute,
+const appdemoAuthGuardRoute = appdemoAuthGuardRouteImport.update({
+  id: "/(app)/(demo)/_authGuard",
+  getParentRoute: () => rootRouteImport,
+} as any)
+const appregisterAuthGuardIndexRoute =
+  appregisterAuthGuardIndexRouteImport.update({
+    id: "/",
+    path: "/",
+    getParentRoute: () => appregisterAuthGuardRoute,
+  } as any)
+const appdemoAuthGuardDemoRoute = appdemoAuthGuardDemoRouteImport.update({
+  id: "/demo",
+  path: "/demo",
+  getParentRoute: () => appdemoAuthGuardRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof DashboardIndexRoute
-  "/login": typeof LoginIndexRoute
+  "/login": typeof LoginRoute
+  "/demo": typeof appdemoAuthGuardDemoRoute
+  "/": typeof appregisterAuthGuardIndexRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof DashboardIndexRoute
-  "/login": typeof LoginIndexRoute
+  "/login": typeof LoginRoute
+  "/demo": typeof appdemoAuthGuardDemoRoute
+  "/": typeof appregisterAuthGuardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  "/_dashboard": typeof DashboardRouteRouteWithChildren
-  "/_dashboard/": typeof DashboardIndexRoute
-  "/login/": typeof LoginIndexRoute
+  "/login": typeof LoginRoute
+  "/(app)/(demo)/_authGuard": typeof appdemoAuthGuardRouteWithChildren
+  "/(app)/(register)/_authGuard": typeof appregisterAuthGuardRouteWithChildren
+  "/(app)/(demo)/_authGuard/demo": typeof appdemoAuthGuardDemoRoute
+  "/(app)/(register)/_authGuard/": typeof appregisterAuthGuardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/" | "/login"
+  fullPaths: "/login" | "/demo" | "/"
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/login"
-  id: "__root__" | "/_dashboard" | "/_dashboard/" | "/login/"
+  to: "/login" | "/demo" | "/"
+  id:
+    | "__root__"
+    | "/login"
+    | "/(app)/(demo)/_authGuard"
+    | "/(app)/(register)/_authGuard"
+    | "/(app)/(demo)/_authGuard/demo"
+    | "/(app)/(register)/_authGuard/"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
-  LoginIndexRoute: typeof LoginIndexRoute
+  LoginRoute: typeof LoginRoute
+  appdemoAuthGuardRoute: typeof appdemoAuthGuardRouteWithChildren
+  appregisterAuthGuardRoute: typeof appregisterAuthGuardRouteWithChildren
 }
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    "/_dashboard": {
-      id: "/_dashboard"
-      path: ""
-      fullPath: ""
-      preLoaderRoute: typeof DashboardRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    "/login/": {
-      id: "/login/"
+    "/login": {
+      id: "/login"
       path: "/login"
       fullPath: "/login"
-      preLoaderRoute: typeof LoginIndexRouteImport
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    "/_dashboard/": {
-      id: "/_dashboard/"
+    "/(app)/(register)/_authGuard": {
+      id: "/(app)/(register)/_authGuard"
+      path: ""
+      fullPath: ""
+      preLoaderRoute: typeof appregisterAuthGuardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/(app)/(demo)/_authGuard": {
+      id: "/(app)/(demo)/_authGuard"
+      path: ""
+      fullPath: ""
+      preLoaderRoute: typeof appdemoAuthGuardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/(app)/(register)/_authGuard/": {
+      id: "/(app)/(register)/_authGuard/"
       path: "/"
       fullPath: "/"
-      preLoaderRoute: typeof DashboardIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
+      preLoaderRoute: typeof appregisterAuthGuardIndexRouteImport
+      parentRoute: typeof appregisterAuthGuardRoute
+    }
+    "/(app)/(demo)/_authGuard/demo": {
+      id: "/(app)/(demo)/_authGuard/demo"
+      path: "/demo"
+      fullPath: "/demo"
+      preLoaderRoute: typeof appdemoAuthGuardDemoRouteImport
+      parentRoute: typeof appdemoAuthGuardRoute
     }
   }
 }
 
-interface DashboardRouteRouteChildren {
-  DashboardIndexRoute: typeof DashboardIndexRoute
+interface appdemoAuthGuardRouteChildren {
+  appdemoAuthGuardDemoRoute: typeof appdemoAuthGuardDemoRoute
 }
 
-const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
-  DashboardIndexRoute: DashboardIndexRoute,
+const appdemoAuthGuardRouteChildren: appdemoAuthGuardRouteChildren = {
+  appdemoAuthGuardDemoRoute: appdemoAuthGuardDemoRoute,
 }
 
-const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
-  DashboardRouteRouteChildren,
-)
+const appdemoAuthGuardRouteWithChildren =
+  appdemoAuthGuardRoute._addFileChildren(appdemoAuthGuardRouteChildren)
+
+interface appregisterAuthGuardRouteChildren {
+  appregisterAuthGuardIndexRoute: typeof appregisterAuthGuardIndexRoute
+}
+
+const appregisterAuthGuardRouteChildren: appregisterAuthGuardRouteChildren = {
+  appregisterAuthGuardIndexRoute: appregisterAuthGuardIndexRoute,
+}
+
+const appregisterAuthGuardRouteWithChildren =
+  appregisterAuthGuardRoute._addFileChildren(appregisterAuthGuardRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  DashboardRouteRoute: DashboardRouteRouteWithChildren,
-  LoginIndexRoute: LoginIndexRoute,
+  LoginRoute: LoginRoute,
+  appdemoAuthGuardRoute: appdemoAuthGuardRouteWithChildren,
+  appregisterAuthGuardRoute: appregisterAuthGuardRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
