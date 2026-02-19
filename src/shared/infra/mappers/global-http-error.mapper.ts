@@ -1,5 +1,5 @@
 import { ResultError } from "@/shared/domain/result";
-import { HttpClientErrorResponse } from "./axios-error.interceptor";
+import { HttpClientErrorResponse } from "../http/axios-error.interceptor";
 import { HttpStatusCode } from "axios";
 import { globalErrors } from "@/shared/domain/errors/global.error";
 

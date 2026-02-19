@@ -60,3 +60,19 @@ export const boardRepositoryErrors = {
 		metadata: { persistenceType, key, date: new Date().toISOString() },
 	}),
 };
+
+export const boardErrorCodes = {
+	// Validation / Domain
+	NameEmpty: "Board.NameEmpty",
+	NameTooLong: "Board.NameTooLong",
+	IdInvalid: "Board.IdInvalid",
+	ColumnIdsInvalid: "Board.ColumnIdsInvalid",
+
+	// Persistence / Repository
+	NotFound: "Board.NotFound",
+	DataNotPersisted: "Board.DataNotPersisted",
+	StorageCorrupted: "Board.StorageCorrupted",
+} as const;
+
+export type boardErrorCode =
+	(typeof boardErrorCodes)[keyof typeof boardErrorCodes];

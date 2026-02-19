@@ -1,68 +1,91 @@
 import { ColumnModel } from "@/features/column";
 import { SubTaskModel } from "@/features/subTask/domain/subTask.model";
 import { TaskModel } from "@/features/task";
-import { ResultError, Result } from "@/shared/domain/result";
+import { globalErrors } from "@/shared/domain/errors/global.error";
+import { PaginatedResponse } from "@/shared/domain/paginated-response.read-model";
+import { Pagination } from "@/shared/domain/pagination.value-object";
+import { Result, ResultError } from "@/shared/domain/result";
 import { HttpClientErrorResponse } from "@/shared/infra/http/axios-error.interceptor";
 import { httpClient } from "@/shared/infra/http/http.client";
+import { mapGlobalHttpError } from "@/shared/infra/mappers/global-http-error.mapper";
+import { mapHttpPaginationErrorToResult } from "@/shared/infra/mappers/pagination-http-error.mapper";
 import { HttpStatusCode } from "axios";
-import { BoardFullDetailsModel } from "../domain/board.board-full-details.model";
+import { BoardFullDetailsModel } from "../domain/board.board-full-details.read-model";
 import {
 	boardRepositoryErrors,
 	boardValidationErrors,
 } from "../domain/board.errors";
 import { Board, BoardModel } from "../domain/board.model";
 import { IBoardRepository } from "../domain/board.repository";
-import { mapGlobalHttpError } from "@/shared/infra/http/global-error.mapper";
 
-interface boardApiDto {
+export interface BoardApiDto {
 	id: string;
 	name: string;
 }
 
-interface BoardFullDetailsDTO {
+export interface BoardFullDetailsDTO {
 	id: string;
 	name: string;
-	columns: Array<{
-		id: string;
-		boardId: string;
-		name: string;
-		color: string;
-		position: number;
-		boardTasks: Array<{
-			id: string;
-			columnId: string;
-			title: string;
-			description: string;
-			isCompleted: boolean;
-			position: number;
-			priority: "low" | "medium" | "high";
-			subTasks: Array<{
-				id: string;
-				boardTaskId: string;
-				description: string;
-				isCompleted: boolean;
-			}>;
-		}>;
-	}>;
+	columns: ColumnFullDetailsDto[];
+}
+
+export interface ColumnFullDetailsDto {
+	id: string;
+	boardId: string;
+	name: string;
+	color: string;
+	position: number;
+	boardTasks: BoardTaskFullDetailsDto[];
+}
+
+export interface BoardTaskFullDetailsDto {
+	id: string;
+	columnId: string;
+	title: string;
+	description: string;
+	isCompleted: boolean;
+	position: number;
+	priority: "low" | "medium" | "high";
+	subTasks: SubTaskFullDetailsDto[];
+}
+
+export interface SubTaskFullDetailsDto {
+	id: string;
+	boardTaskId: string;
+	description: string;
+	isCompleted: boolean;
 }
 
 export const apiBoardRepository: IBoardRepository = {
-	// TODO: implement proper pagination
-	findPaginated: (page: number, limit: number): Promise<Result<BoardModel[]>> =>
-		httpClient
-			.get<boardApiDto[]>(`/boards?page=${page}&limit=${limit}`)
-			.then((res) =>
-				Result.Success(res.data.map((toBoardDto) => toBoard(toBoardDto).value)),
-			)
-			.catch(() =>
-				Result.Failure([
-					boardRepositoryErrors.dataNotFound("UNDEFINED", "api"),
-				]),
-			),
+	search: async (
+		pagination: Pagination,
+	): Promise<Result<PaginatedResponse<BoardModel>>> => {
+		const params = new URLSearchParams();
+		params.append("limit", pagination.limit.toString());
 
+		if (pagination.cursor) params.append("cursor", pagination.cursor);
+
+		return httpClient
+			.get<PaginatedResponse<BoardApiDto>>(`/boards?${params.toString()}`)
+			.then(({ data }) => {
+				const domainItems = data.items.map((dto) => toBoard(dto).value);
+				const paginatedResponse: PaginatedResponse<BoardModel> = {
+					...data,
+					items: domainItems,
+				};
+
+				return Result.Success(paginatedResponse);
+			})
+			.catch((error: HttpClientErrorResponse) =>
+				mapHttpPaginationErrorToResult<PaginatedResponse<BoardModel>>(
+					error,
+					pagination,
+				),
+			);
+	},
 	findById: (boardId: BoardModel["id"]): Promise<Result<BoardModel>> =>
 		httpClient
-			.get<boardApiDto>(`/boards/${boardId}`)
+			.get<BoardApiDto>(`/boards/${boardId}`)
 			.then((res) => toBoard(res.data))
 			.catch((error: HttpClientErrorResponse) =>
 				mapHttpBoardErrorToResult(error, { id: boardId } as BoardModel),
@@ -70,7 +93,7 @@ export const apiBoardRepository: IBoardRepository = {
 
 	create: (data: BoardModel): Promise<Result<BoardModel>> =>
 		httpClient
-			.post<boardApiDto>("/boards", {
+			.post<BoardApiDto>("/boards", {
 				name: data.name,
 			})
 			.then((res) => toBoard(res.data))
@@ -80,7 +103,7 @@ export const apiBoardRepository: IBoardRepository = {
 
 	update: (data: BoardModel): Promise<Result<BoardModel>> =>
 		httpClient
-			.patch<boardApiDto>(`/boards/${data.id}`, {
+			.patch<BoardApiDto>(`/boards/${data.id}`, {
 				name: data.name,
 			})
 			.then((res) => toBoard(res.data))
@@ -107,7 +130,7 @@ export const apiBoardRepository: IBoardRepository = {
 			),
 };
 
-const toBoard = (dto: boardApiDto): Result<BoardModel> =>
+const toBoard = (dto: BoardApiDto): Result<BoardModel> =>
 	Board({
 		id: dto.id,
 		name: dto.name,
@@ -119,7 +142,15 @@ const mapToBoardData = (dto: BoardFullDetailsDTO): BoardFullDetailsModel => {
 	const tasks: TaskModel[] = [];
 	const subTasks: SubTaskModel[] = [];
 
+	const board: BoardModel = {
+		id: dto.id,
+		name: dto.name,
+		columnIds: [],
+	};
+
 	dto.columns.forEach((col) => {
+		board.columnIds.push(col.id);
+
 		columns.push({
 			id: col.id,
 			boardId: col.boardId,
@@ -138,7 +169,7 @@ const mapToBoardData = (dto: BoardFullDetailsDTO): BoardFullDetailsModel => {
 				isCompleted: task.isCompleted,
 				position: task.position,
 				priority: task.priority,
-				subtaskIds: task.subTasks.map((st) => st.id),
+				subTaskIds: task.subTasks.map((st) => st.id),
 			});
 
 			task.subTasks.forEach((st) => {
@@ -152,10 +183,10 @@ const mapToBoardData = (dto: BoardFullDetailsDTO): BoardFullDetailsModel => {
 		});
 	});
 
-	return { columns, tasks, subTasks };
+	return { board, columns, tasks, subTasks };
 };
 
-const mapHttpBoardErrorToResult = <R = BoardModel>(
+export const mapHttpBoardErrorToResult = <R = BoardModel>(
 	error: HttpClientErrorResponse,
 	model: BoardModel,
 ): Result<R> => {
@@ -184,5 +215,5 @@ const mapHttpBoardErrorToResult = <R = BoardModel>(
 		if (validationErrors.length > 0) return Result.Failure(validationErrors);
 	}
 
-	return Result.Failure([boardRepositoryErrors.dataNotFound("/boards", "api")]);
+	return Result.Failure([globalErrors.serverError()]);
 };

@@ -1,14 +1,16 @@
 import { ColumnModel } from "@/features/column";
 import { SubTaskModel } from "@/features/subTask";
 import { TaskModel } from "@/features/task";
+import { PaginatedResponse } from "@/shared/domain/paginated-response.read-model";
+import { Pagination } from "@/shared/domain/pagination.value-object";
 import { Result } from "@/shared/domain/result";
 import {
 	sessionDb,
 	sessionDbKeys,
 } from "@/shared/infra/persistence/session-storage.db";
 import z from "zod";
-import { BoardFullDetailsModel } from "../domain/board.board-full-details.model";
-import { BoardModel } from "../domain/board.model";
+import { BoardFullDetailsModel } from "../domain/board.board-full-details.read-model";
+import { Board, BoardModel } from "../domain/board.model";
 import { IBoardRepository } from "../domain/board.repository";
 import {
 	boardErrorCodes,
@@ -16,22 +18,69 @@ import {
 } from "./../domain/board.errors";
 
 export const sessionStorageBoardRepository: IBoardRepository = {
-	// TODO: implement proper pagination
-	findPaginated: async (page: number, limit: number) => {
-		const currentBoards = await loadPersistedBoards();
-		if (!currentBoards.isSuccess) return Result.Failure([]);
+	search: async (
+		pagination: Pagination,
+	): Promise<Result<PaginatedResponse<BoardModel>>> => {
+		const { value: boards, isSuccess, errors } = await loadPersistedBoards();
 
-		// ❌
-		return Result.Success([]);
+		if (!isSuccess)
+			return errors[0].code === boardErrorCodes.DataNotPersisted
+				? Result.Success({
+						items: [],
+						hasNextPage: false,
+						nextCursor: null,
+					})
+				: Result.Failure(errors);
+
+		if (pagination.cursor === undefined) {
+			const items = boards.slice(0, pagination.limit);
+			const lastItem = items[items.length - 1];
+			const hasNextPage = boards.length > pagination.limit;
+
+			const nextCursor =
+				lastItem && hasNextPage ? encodeCursor(lastItem.id) : null;
+
+			return Result.Success({
+				items,
+				nextCursor,
+				hasNextPage,
+			});
+		}
+
+		const cursorValue = decodeCursor(pagination.cursor);
+		const itemIndex = boards.findIndex((b) => b.id === cursorValue);
+
+		if (itemIndex === -1) return Result.Failure([]);
+
+		const start = itemIndex + 1;
+		const end = start + pagination.limit;
+		const items = boards.slice(start, end);
+
+		const lastItem = items[items.length - 1];
+		const hasNextPage = boards.length > end;
+
+		const nextCursor =
+			lastItem && hasNextPage ? encodeCursor(lastItem.id) : null;
+
+		return Result.Success({
+			items,
+			nextCursor,
+			hasNextPage,
+		});
 	},
 
 	getBoardDetails: async (
 		id: string,
 	): Promise<Result<BoardFullDetailsModel>> => {
 		const { value, isSuccess, errors } = await loadPersistedBoards();
-		if (!isSuccess) return Result.Failure(errors);
+		if (!isSuccess)
+			return errors[0].code === boardErrorCodes.DataNotPersisted
+				? Result.Failure([boardRepositoryErrors.notFound(id)])
+				: Result.Failure(errors);
 
-		if (value.findIndex((board) => board.id === board.id) === -1)
+		const boardIndex = value.findIndex((board) => board.id === board.id);
+
+		if (boardIndex === -1)
 			return Result.Failure([boardRepositoryErrors.notFound(id)]);
 
 		const columnsPersisted = sessionDb.columns.get();
@@ -46,6 +95,7 @@ export const sessionStorageBoardRepository: IBoardRepository = {
 
 		if (!columnsPersisted || !tasksPersisted)
 			return Result.Success({
+				board: value[boardIndex],
 				columns,
 				tasks,
 				subTasks,
@@ -59,7 +109,7 @@ export const sessionStorageBoardRepository: IBoardRepository = {
 				tasks.push(taskFounded);
 				if (!subTasksPersisted) return;
 
-				taskFounded.subtaskIds.forEach((subtaskId) => {
+				taskFounded.subTaskIds.forEach((subtaskId) => {
 					const subTaskFounded = subTasksPersisted.find(
 						(st) => st.id === subtaskId,
 					);
@@ -69,7 +119,12 @@ export const sessionStorageBoardRepository: IBoardRepository = {
 			});
 		});
 
-		return Result.Success({ columns, tasks, subTasks });
+		return Result.Success({
+			board: value[boardIndex],
+			columns,
+			tasks,
+			subTasks,
+		});
 	},
 
 	findById: async (boardId: BoardModel["id"]): Promise<Result<BoardModel>> => {
@@ -89,15 +144,17 @@ export const sessionStorageBoardRepository: IBoardRepository = {
 				return Result.Failure(errors);
 		}
 
-		sessionDb.boards.save([...(isSuccess ? value : []), data]);
-		return Result.Success(data);
+		const boardToPersist = Board({ ...data, id: crypto.randomUUID() });
+
+		sessionDb.boards.save([...(isSuccess ? value : []), boardToPersist.value]);
+		return Result.Success(boardToPersist.value);
 	},
 
 	update: async (data: BoardModel): Promise<Result<BoardModel>> => {
 		const { isSuccess, value, errors } = await loadPersistedBoards();
 		if (!isSuccess) return Result.Failure(errors);
 
-		const boardFoundedIndex = value.findIndex((board) => board.id === board.id);
+		const boardFoundedIndex = value.findIndex((b) => b.id === data.id);
 		if (boardFoundedIndex === -1)
 			return Result.Failure([boardRepositoryErrors.notFound(data.id)]);
 
@@ -111,7 +168,7 @@ export const sessionStorageBoardRepository: IBoardRepository = {
 		const { isSuccess, value, errors } = await loadPersistedBoards();
 		if (!isSuccess) return Result.Failure(errors);
 
-		const foundedBoard = value.find((board) => board.id === board.id);
+		const foundedBoard = value.find((b) => b.id === data.id);
 		if (!foundedBoard)
 			return Result.Failure([boardRepositoryErrors.notFound(data.id)]);
 
@@ -157,3 +214,11 @@ const loadPersistedBoards = async (): Promise<Result<BoardModel[]>> => {
 
 	return Result.Success(validation.data);
 };
+
+export function encodeCursor(id: string): string {
+	return btoa(id); // string to Base64
+}
+
+export function decodeCursor(cursor: string): string {
+	return atob(cursor); // base64 to String
+}
