@@ -1,4 +1,5 @@
 import { sessionStorageUserCreator } from "@/features/user";
+import { ApplicationLogo } from "@/shared/presentation/components/aplication-logo";
 import { Button } from "@/shared/presentation/components/ui/button";
 import {
 	Card,
@@ -31,40 +32,7 @@ export const LoginCard = () => {
 			<CardHeader>
 				<div className="flex justify-center">
 					<div className="bg-secondary flex h-14 w-14 items-center justify-center rounded-lg shadow-sm">
-						<svg
-							width="20"
-							height="20"
-							viewBox="0 0 20 20"
-							fill="currentColor"
-							xmlns="http://www.w3.org/2000/svg">
-							<rect
-								x="2"
-								y="2"
-								width="6"
-								height="6"
-								rx="1"
-								fill="currentColor"
-								className="text-secondary-foreground"
-							/>
-							<rect
-								x="2"
-								y="10"
-								width="6"
-								height="6"
-								rx="1"
-								fill="currentColor"
-								className="text-secondary-foreground"
-							/>
-							<rect
-								x="10"
-								y="2"
-								width="6"
-								height="6"
-								rx="1"
-								fill="currentColor"
-								className="text-secondary-foreground"
-							/>
-						</svg>
+						<ApplicationLogo />
 					</div>
 				</div>
 				<CardTitle className="text-center text-[28px]">

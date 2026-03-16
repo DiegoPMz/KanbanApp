@@ -95,7 +95,7 @@ const taskListSessionStorageSchema: z.ZodType<TaskModel[]> = z.array(
 		isCompleted: z.boolean(),
 		position: z.number().min(0),
 		priority: z.enum(["low", "medium", "high"]),
-		subtaskIds: z.array(z.string()),
+		subTaskIds: z.array(z.string()),
 	}),
 );
 

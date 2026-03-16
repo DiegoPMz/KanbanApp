@@ -18,7 +18,7 @@ export interface TaskModel {
 	isCompleted: boolean;
 	position: number;
 	priority: TaskPriorities;
-	subtaskIds: string[];
+	subTaskIds: string[];
 }
 
 type TaskInput = Omit<TaskModel, "id"> & {
@@ -54,8 +54,8 @@ export const Task = (data: TaskInput): Result<TaskModel> => {
 			taskValidationErrors.invalidPriority(data.priority, data.id),
 		]);
 
-	if (!data.subtaskIds)
-		return Result.Failure([taskValidationErrors.invalidSubtaskIds(data.id)]);
+	if (!data.subTaskIds)
+		return Result.Failure([taskValidationErrors.invalidSubTaskIds(data.id)]);
 
 	return Result.Success({
 		columnId: data.columnId,
@@ -65,6 +65,6 @@ export const Task = (data: TaskInput): Result<TaskModel> => {
 		isCompleted: data.isCompleted,
 		position: data.position,
 		priority: data.priority,
-		subtaskIds: data.subtaskIds,
+		subTaskIds: data.subTaskIds,
 	});
 };

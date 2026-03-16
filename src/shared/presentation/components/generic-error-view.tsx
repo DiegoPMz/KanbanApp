@@ -10,24 +10,26 @@ type PossibleErrorTypes = Exclude<
 >;
 
 const errorTypeTitle: Record<PossibleErrorTypes, string> = {
-	[errorTypes.Conflict]: "That's already taken",
-	[errorTypes.Internal]: "Something went wrong on our end",
-	[errorTypes.Not_found]: "We couldn't find what you’re looking for",
-	[errorTypes.Validation]: "Please check the information you entered",
+	[errorTypes.Conflict]: "Conflict detected",
+	[errorTypes.Internal]: "Service unavailable",
+	[errorTypes.Not_found]: "Resource not found",
+	[errorTypes.Validation]: "Invalid data provided",
 };
 
 export const GenericErrorView = ({ error }: ErrorComponentProps) => {
 	let message =
 		"We’re having trouble showing this right now. Please make sure you're online and give it another shot.";
 	let title = "Something went wrong";
+	let errorCode: string | undefined;
 
 	if (error instanceof TanStackError) {
 		message = error.message;
 		title = errorTypeTitle[error.type as PossibleErrorTypes] ?? title;
+		errorCode = error.code;
 	}
 
 	return (
-		<div className="bg-background flex min-h-screen items-center justify-center p-6">
+		<div className="bg-background dark flex min-h-screen items-center justify-center p-6">
 			<div className="w-full max-w-md">
 				{/* Icon */}
 				<div className="mb-6 flex justify-center">
@@ -43,8 +45,20 @@ export const GenericErrorView = ({ error }: ErrorComponentProps) => {
 				</div>
 
 				<div className="mb-8 text-center">
-					<h1 className="text-foreground mb-3">{title}</h1>
-					<p className="text-muted-foreground leading-relaxed">{message}</p>
+					<div className="mb-3 flex flex-col items-center gap-2">
+						<h1 className="text-foreground text-2xl font-bold tracking-tight">
+							{title}
+						</h1>
+						{errorCode && (
+							<span className="bg-muted text-muted-foreground/60 rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider">
+								Error: {errorCode}
+							</span>
+						)}
+					</div>
+
+					<p className="text-muted-foreground text-balance leading-relaxed">
+						{message}
+					</p>
 				</div>
 
 				<div className="flex flex-col gap-3">
@@ -66,7 +80,7 @@ export const GenericErrorView = ({ error }: ErrorComponentProps) => {
 
 				<div className="border-border mt-8 border-t pt-6">
 					<p className="text-muted-foreground/60 text-center text-sm">
-						If the problem persist, please contact the tecnical support
+						If the problem persists, please contact technical support.
 					</p>
 				</div>
 			</div>

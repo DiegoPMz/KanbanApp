@@ -1,6 +1,5 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { Task, TASK_PRIORITIES, TaskModel } from "./task.model";
 import { taskValidationErrors } from "./task.errors";
+import { Task, TASK_PRIORITIES, TaskModel } from "./task.model";
 
 describe("feature:Task --> TaskModel", () => {
 	beforeEach(() => {
@@ -21,7 +20,7 @@ describe("feature:Task --> TaskModel", () => {
 			position: 0,
 			priority: TASK_PRIORITIES.LOW,
 			columnId: "some-column-id",
-			subtaskIds: [],
+			subTaskIds: [],
 		});
 
 		expect(result.errors[0]).toEqual(taskValidationErrors.emptyTitle());
@@ -36,7 +35,7 @@ describe("feature:Task --> TaskModel", () => {
 			position: 0,
 			priority: TASK_PRIORITIES.LOW,
 			columnId: "some-column-id",
-			subtaskIds: [],
+			subTaskIds: [],
 		});
 
 		expect(result.errors[0]).toEqual(
@@ -53,7 +52,7 @@ describe("feature:Task --> TaskModel", () => {
 			position: 0,
 			priority: mockedPriority,
 			columnId: "some-column-id",
-			subtaskIds: [],
+			subTaskIds: [],
 		});
 
 		expect(result.errors[0]).toEqual(
@@ -70,7 +69,7 @@ describe("feature:Task --> TaskModel", () => {
 			position: 0,
 			priority: TASK_PRIORITIES.LOW,
 			columnId: invalidColumnId,
-			subtaskIds: [],
+			subTaskIds: [],
 		});
 
 		expect(result.errors[0]).toEqual(
@@ -87,7 +86,7 @@ describe("feature:Task --> TaskModel", () => {
 			position: mockedPosition,
 			priority: TASK_PRIORITIES.LOW,
 			columnId: "some-column-id",
-			subtaskIds: [],
+			subTaskIds: [],
 		});
 
 		expect(result.errors[0]).toEqual(
@@ -104,7 +103,7 @@ describe("feature:Task --> TaskModel", () => {
 			position: mockedPosition,
 			priority: TASK_PRIORITIES.LOW,
 			columnId: "some-column-id",
-			subtaskIds: [],
+			subTaskIds: [],
 		});
 
 		expect(result.errors[0]).toEqual(
@@ -120,10 +119,10 @@ describe("feature:Task --> TaskModel", () => {
 			position: 10,
 			priority: TASK_PRIORITIES.LOW,
 			columnId: "some-column-id",
-			subtaskIds: undefined as unknown as [],
+			subTaskIds: undefined as unknown as [],
 		});
 
-		expect(result.errors[0]).toEqual(taskValidationErrors.invalidSubtaskIds());
+		expect(result.errors[0]).toEqual(taskValidationErrors.invalidSubTaskIds());
 	});
 
 	test("Should create a TaskModel successfully when all data is valid", () => {
@@ -135,7 +134,7 @@ describe("feature:Task --> TaskModel", () => {
 			position: 0,
 			priority: TASK_PRIORITIES.LOW,
 			columnId: "some-column-id",
-			subtaskIds: [],
+			subTaskIds: [],
 		};
 
 		const result = Task(validData);

@@ -1,8 +1,9 @@
+import { loginDemo, loginRegister } from "@/features/auth";
 import {
+	boardList,
 	createBoard,
 	deleteBoard,
 	getBoardDetails,
-	getBoardsPaginated,
 	updateBoard,
 } from "@/features/board";
 import {
@@ -27,7 +28,6 @@ import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { appBaseDependencies } from "./app-dependencies.base";
 import { appDemoDependencies } from "./app-dependencies.demo";
 import { useSessionType } from "./session-type.context";
-import { loginDemo, loginRegister } from "@/features/auth";
 
 export interface AppDependencies {
 	user: {
@@ -39,7 +39,7 @@ export interface AppDependencies {
 		updateBoard: ReturnType<typeof updateBoard>;
 		deleteBoard: ReturnType<typeof deleteBoard>;
 		getBoardDetails: ReturnType<typeof getBoardDetails>;
-		getBoardPaginated: ReturnType<typeof getBoardsPaginated>;
+		boardList: ReturnType<typeof boardList>;
 	};
 	column: {
 		createColumn: ReturnType<typeof createColumn>;

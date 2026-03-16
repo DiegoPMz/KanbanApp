@@ -6,10 +6,10 @@ import {
 	sessionStorageAuthService,
 } from "@/features/auth";
 import {
+	boardList,
 	createBoard,
 	deleteBoard,
 	getBoardDetails,
-	getBoardsPaginated,
 	sessionStorageBoardRepository,
 	updateBoard,
 } from "@/features/board";
@@ -47,7 +47,7 @@ export const appDemoDependencies: AppDependencies = {
 		updateBoard: updateBoard(sessionStorageBoardRepository),
 		deleteBoard: deleteBoard(sessionStorageBoardRepository),
 		getBoardDetails: getBoardDetails(sessionStorageBoardRepository),
-		getBoardPaginated: getBoardsPaginated(sessionStorageBoardRepository),
+		boardList: boardList(sessionStorageBoardRepository),
 	},
 	user: {
 		getUserDetails: getUserDetails(sessionStorageUserRepository),

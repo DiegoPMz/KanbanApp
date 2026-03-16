@@ -62,13 +62,13 @@ export const taskValidationErrors = {
 		type: "Validation",
 		metadata: { id, columnId, date: new Date().toISOString() },
 	}),
-	invalidSubtaskIds: (id?: string): ResultError => ({
+	invalidSubTaskIds: (id?: string): ResultError => ({
 		code: "Task.SubtaskIdsInvalid",
 		message: "Task subtask IDs must be a valid array of strings.",
 		type: "Validation",
 		metadata: {
 			id,
-			field: "subtaskIds",
+			field: "subTaskIds",
 			date: new Date().toISOString(),
 		},
 	}),

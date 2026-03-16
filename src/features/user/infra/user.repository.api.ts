@@ -9,7 +9,7 @@ import {
 import { USER_SESSION_TYPES, UserModel } from "../domain/user.model";
 import { IUserRepository } from "../domain/user.repository";
 import { User } from "./../domain/user.model";
-import { mapGlobalHttpError } from "@/shared/infra/http/global-error.mapper";
+import { mapGlobalHttpError } from "@/shared/infra/mappers/global-http-error.mapper";
 
 export interface UserApiDto {
 	id: string;

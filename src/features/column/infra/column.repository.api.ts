@@ -8,7 +8,7 @@ import {
 	columnValidationErrors,
 } from "../domain/column.errors";
 import { IColumnRepository } from "../domain/column.repository";
-import { mapGlobalHttpError } from "@/shared/infra/http/global-error.mapper";
+import { mapGlobalHttpError } from "@/shared/infra/mappers/global-http-error.mapper";
 
 interface ColumnApiDto {
 	id: string;

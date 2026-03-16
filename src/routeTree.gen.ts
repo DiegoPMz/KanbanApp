@@ -13,7 +13,8 @@ import { Route as LoginRouteImport } from "./routes/login"
 import { Route as appregisterAuthGuardRouteImport } from "./routes/(app)/(register)/_authGuard"
 import { Route as appdemoAuthGuardRouteImport } from "./routes/(app)/(demo)/_authGuard"
 import { Route as appregisterAuthGuardIndexRouteImport } from "./routes/(app)/(register)/_authGuard/index"
-import { Route as appdemoAuthGuardDemoRouteImport } from "./routes/(app)/(demo)/_authGuard/demo"
+import { Route as appdemoAuthGuardDemoRouteRouteImport } from "./routes/(app)/(demo)/_authGuard/demo.route"
+import { Route as appdemoAuthGuardDemoIndexRouteImport } from "./routes/(app)/(demo)/_authGuard/demo.index"
 
 const LoginRoute = LoginRouteImport.update({
   id: "/login",
@@ -34,35 +35,44 @@ const appregisterAuthGuardIndexRoute =
     path: "/",
     getParentRoute: () => appregisterAuthGuardRoute,
   } as any)
-const appdemoAuthGuardDemoRoute = appdemoAuthGuardDemoRouteImport.update({
-  id: "/demo",
-  path: "/demo",
-  getParentRoute: () => appdemoAuthGuardRoute,
-} as any)
+const appdemoAuthGuardDemoRouteRoute =
+  appdemoAuthGuardDemoRouteRouteImport.update({
+    id: "/demo",
+    path: "/demo",
+    getParentRoute: () => appdemoAuthGuardRoute,
+  } as any)
+const appdemoAuthGuardDemoIndexRoute =
+  appdemoAuthGuardDemoIndexRouteImport.update({
+    id: "/",
+    path: "/",
+    getParentRoute: () => appdemoAuthGuardDemoRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   "/login": typeof LoginRoute
-  "/demo": typeof appdemoAuthGuardDemoRoute
+  "/demo": typeof appdemoAuthGuardDemoRouteRouteWithChildren
   "/": typeof appregisterAuthGuardIndexRoute
+  "/demo/": typeof appdemoAuthGuardDemoIndexRoute
 }
 export interface FileRoutesByTo {
   "/login": typeof LoginRoute
-  "/demo": typeof appdemoAuthGuardDemoRoute
   "/": typeof appregisterAuthGuardIndexRoute
+  "/demo": typeof appdemoAuthGuardDemoIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   "/login": typeof LoginRoute
   "/(app)/(demo)/_authGuard": typeof appdemoAuthGuardRouteWithChildren
   "/(app)/(register)/_authGuard": typeof appregisterAuthGuardRouteWithChildren
-  "/(app)/(demo)/_authGuard/demo": typeof appdemoAuthGuardDemoRoute
+  "/(app)/(demo)/_authGuard/demo": typeof appdemoAuthGuardDemoRouteRouteWithChildren
   "/(app)/(register)/_authGuard/": typeof appregisterAuthGuardIndexRoute
+  "/(app)/(demo)/_authGuard/demo/": typeof appdemoAuthGuardDemoIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/login" | "/demo" | "/"
+  fullPaths: "/login" | "/demo" | "/" | "/demo/"
   fileRoutesByTo: FileRoutesByTo
-  to: "/login" | "/demo" | "/"
+  to: "/login" | "/" | "/demo"
   id:
     | "__root__"
     | "/login"
@@ -70,6 +80,7 @@ export interface FileRouteTypes {
     | "/(app)/(register)/_authGuard"
     | "/(app)/(demo)/_authGuard/demo"
     | "/(app)/(register)/_authGuard/"
+    | "/(app)/(demo)/_authGuard/demo/"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -112,18 +123,39 @@ declare module "@tanstack/react-router" {
       id: "/(app)/(demo)/_authGuard/demo"
       path: "/demo"
       fullPath: "/demo"
-      preLoaderRoute: typeof appdemoAuthGuardDemoRouteImport
+      preLoaderRoute: typeof appdemoAuthGuardDemoRouteRouteImport
       parentRoute: typeof appdemoAuthGuardRoute
+    }
+    "/(app)/(demo)/_authGuard/demo/": {
+      id: "/(app)/(demo)/_authGuard/demo/"
+      path: "/"
+      fullPath: "/demo/"
+      preLoaderRoute: typeof appdemoAuthGuardDemoIndexRouteImport
+      parentRoute: typeof appdemoAuthGuardDemoRouteRoute
     }
   }
 }
 
+interface appdemoAuthGuardDemoRouteRouteChildren {
+  appdemoAuthGuardDemoIndexRoute: typeof appdemoAuthGuardDemoIndexRoute
+}
+
+const appdemoAuthGuardDemoRouteRouteChildren: appdemoAuthGuardDemoRouteRouteChildren =
+  {
+    appdemoAuthGuardDemoIndexRoute: appdemoAuthGuardDemoIndexRoute,
+  }
+
+const appdemoAuthGuardDemoRouteRouteWithChildren =
+  appdemoAuthGuardDemoRouteRoute._addFileChildren(
+    appdemoAuthGuardDemoRouteRouteChildren,
+  )
+
 interface appdemoAuthGuardRouteChildren {
-  appdemoAuthGuardDemoRoute: typeof appdemoAuthGuardDemoRoute
+  appdemoAuthGuardDemoRouteRoute: typeof appdemoAuthGuardDemoRouteRouteWithChildren
 }
 
 const appdemoAuthGuardRouteChildren: appdemoAuthGuardRouteChildren = {
-  appdemoAuthGuardDemoRoute: appdemoAuthGuardDemoRoute,
+  appdemoAuthGuardDemoRouteRoute: appdemoAuthGuardDemoRouteRouteWithChildren,
 }
 
 const appdemoAuthGuardRouteWithChildren =

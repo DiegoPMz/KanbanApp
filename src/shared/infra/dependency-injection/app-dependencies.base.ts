@@ -7,10 +7,10 @@ import {
 } from "@/features/auth";
 import {
 	apiBoardRepository,
+	boardList,
 	createBoard,
 	deleteBoard,
 	getBoardDetails,
-	getBoardsPaginated,
 	updateBoard,
 } from "@/features/board";
 import {
@@ -47,7 +47,7 @@ export const appBaseDependencies: AppDependencies = {
 		updateBoard: updateBoard(apiBoardRepository),
 		deleteBoard: deleteBoard(apiBoardRepository),
 		getBoardDetails: getBoardDetails(apiBoardRepository),
-		getBoardPaginated: getBoardsPaginated(apiBoardRepository),
+		boardList: boardList(apiBoardRepository),
 	},
 	user: {
 		getUserDetails: getUserDetails(apiUserRepository),

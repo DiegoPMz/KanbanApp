@@ -1,4 +1,4 @@
-import { Result } from "@/shared/domain/result";
+import { Result, ResultError } from "@/shared/domain/result";
 import { userBusinessErrors, userValidationErrors } from "./user.errors";
 
 export const USER_SESSION_TYPES = {
@@ -41,4 +41,80 @@ export const User = (data: UserInput): Result<UserModel> => {
 		email: data.email,
 		theme: data.theme,
 	});
+};
+
+// possible refactor
+
+class UserId {
+	public readonly value: string;
+
+	private constructor(id: string) {
+		this.value = id;
+	}
+
+	static create(): UserId {
+		return new UserId(crypto.randomUUID());
+	}
+
+	static from(id: string): UserId {
+		return new UserId(id);
+	}
+}
+
+const internalUserValidations = (user: UserModel): ResultError[] => {
+	const errors: ResultError[] = [];
+
+	if (!Object.values(USER_SESSION_TYPES).includes(user.sessionType))
+		errors.push(userValidationErrors.invalidSessionType(user.sessionType));
+
+	if (user.sessionType === USER_SESSION_TYPES.BASE && !user.id)
+		errors.push(userBusinessErrors.requiredIdForRegisteredUser());
+
+	if (user.sessionType === USER_SESSION_TYPES.BASE && !user.email)
+		errors.push(userBusinessErrors.requiredEmailForBaseSession());
+
+	if (!Object.values(USER_THEME_TYPES).includes(user.theme))
+		errors.push(userBusinessErrors.requiredEmailForBaseSession());
+
+	return errors;
+};
+
+interface UserModelProperties {
+	readonly id: string;
+	readonly email: string | null;
+	readonly theme: (typeof USER_THEME_TYPES)[keyof typeof USER_THEME_TYPES];
+	readonly sessionType: keyof typeof USER_SESSION_TYPES;
+}
+
+export const user = {
+	create: (
+		id: UserId,
+		email: string,
+		theme?: UserModel["theme"],
+	): Result<UserModelProperties> => {
+		const user = {
+			id: id.value,
+			sessionType: USER_SESSION_TYPES.BASE,
+			email,
+			theme: theme ?? "Light",
+		} as const;
+
+		const errors = internalUserValidations(user);
+		return errors.length > 0 ? Result.Failure(errors) : Result.Success(user);
+	},
+
+	createDemo: (
+		id: UserId,
+		theme?: UserModel["theme"],
+	): Result<UserModelProperties> => {
+		const user = {
+			id: id.value,
+			sessionType: USER_SESSION_TYPES.DEMO,
+			email: null,
+			theme: theme ?? "Light",
+		} as const;
+
+		const errors = internalUserValidations(user);
+		return errors.length > 0 ? Result.Failure(errors) : Result.Success(user);
+	},
 };

@@ -8,7 +8,7 @@ import {
 } from "../domain/subTask.errors";
 import { SubTask, SubTaskModel } from "../domain/subTask.model";
 import { ISubTaskRepository } from "../domain/subTask.repository";
-import { mapGlobalHttpError } from "@/shared/infra/http/global-error.mapper";
+import { mapGlobalHttpError } from "@/shared/infra/mappers/global-http-error.mapper";
 
 interface SubTaskApiDto {
 	id: string;

@@ -1,5 +1,6 @@
 import { getUserDetailsBaseOptions } from "@/features/user/presentation/hooks/get-user-details.hook";
 import { errorTypes } from "@/shared/domain/result";
+import { appBaseDependencies } from "@/shared/infra/dependency-injection/app-dependencies.base";
 import { TanStackError } from "@/shared/infra/errors/tanstack-result.exception";
 import { GenericErrorView } from "@/shared/presentation/components/generic-error-view";
 import { createFileRoute, redirect } from "@tanstack/react-router";
@@ -9,7 +10,10 @@ export const Route = createFileRoute("/(app)/(register)/_authGuard")({
 		const { queryClient, setBaseSessionType } = context;
 
 		try {
-			await queryClient.ensureQueryData(getUserDetailsBaseOptions);
+			await queryClient.ensureQueryData(
+				getUserDetailsBaseOptions(appBaseDependencies.user.getUserDetails),
+			);
+
 			setBaseSessionType();
 		} catch (error: unknown) {
 			if (

@@ -1,5 +1,4 @@
 import { getUserDetailsBaseOptions } from "@/features/user/presentation/hooks/get-user-details.hook";
-import { resultHandler } from "@/shared/application/utils/result-handler";
 import { errorTypes } from "@/shared/domain/result";
 import { appDemoDependencies } from "@/shared/infra/dependency-injection/app-dependencies.demo";
 import { TanStackError } from "@/shared/infra/errors/tanstack-result.exception";
@@ -12,12 +11,9 @@ export const Route = createFileRoute("/(app)/(demo)/_authGuard")({
 
 		try {
 			await queryClient.ensureQueryData({
-				...getUserDetailsBaseOptions,
-				queryFn: async () => {
-					const result = await appDemoDependencies.user.getUserDetails.handle();
-					return resultHandler("getUserDetails", result);
-				},
+				...getUserDetailsBaseOptions(appDemoDependencies.user.getUserDetails),
 			});
+
 			setDemoSessionType();
 		} catch (error: unknown) {
 			if (

@@ -21,7 +21,7 @@ export const createTask = (taskRepository: ITaskRepository) => {
 				isCompleted: data.isCompleted,
 				position: data.position,
 				priority: data.priority,
-				subtaskIds: [],
+				subTaskIds: [],
 			});
 
 			return taskCreatedResult.isSuccess

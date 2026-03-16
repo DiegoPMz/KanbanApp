@@ -9,7 +9,7 @@ import {
 import { Task } from "../domain/task.model";
 import { ITaskRepository } from "../domain/task.repository";
 import { TaskModel } from "./../domain/task.model";
-import { mapGlobalHttpError } from "@/shared/infra/http/global-error.mapper";
+import { mapGlobalHttpError } from "@/shared/infra/mappers/global-http-error.mapper";
 
 interface TaskApiDto {
 	columnId: string;
@@ -113,7 +113,7 @@ const toTask = (model: TaskApiDto) =>
 		isCompleted: model.isCompleted,
 		position: model.position,
 		priority: model.priority,
-		subtaskIds: [],
+		subTaskIds: [],
 	});
 
 const mapHttpTaskErrorToResult = <R = TaskModel>(
